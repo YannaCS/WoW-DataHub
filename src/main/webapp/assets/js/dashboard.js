@@ -9,9 +9,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
         });
     });
 });
@@ -49,6 +52,177 @@ const chartConfig = {
             }
         }
     }
+};
+
+// Generate sample performance data
+function generatePerformanceData() {
+    const baseLatency = 25;
+    const data = [];
+    for (let i = 0; i < 24; i++) {
+        const variation = Math.sin(i * Math.PI / 12) * 15 + Math.random() * 10;
+        data.push(Math.max(5, baseLatency + variation));
+    }
+    return data;
+}
+
+// Utility: Debounce function
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Easing function
+function easeOutQuart(t) {
+    return 1 - (--t) * t * t * t;
+}
+
+// Animate number changes
+function animateNumber(element, from, to) {
+    const duration = 1000;
+    const startTime = performance.now();
+    
+    function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        const currentValue = Math.round(from + (to - from) * easeOutQuart(progress));
+        element.textContent = currentValue.toLocaleString();
+        
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        }
+    }
+    
+    requestAnimationFrame(animate);
+}
+
+// Collect current filter values
+function collectFilters() {
+    const filters = {};
+    const filterSelects = document.querySelectorAll('.filter-select');
+    const filterInputs = document.querySelectorAll('.filter-input');
+    
+    filterSelects.forEach(select => {
+        if (select.value && select.value !== 'All') {
+            filters[select.name || select.id] = select.value;
+        }
+    });
+    
+    filterInputs.forEach(input => {
+        if (input.value.trim()) {
+            filters[input.name || input.id] = input.value.trim();
+        }
+    });
+    
+    return filters;
+}
+
+// Show loading state
+function showLoadingState() {
+    const loadingElements = document.querySelectorAll('.stat-value, .chart-container');
+    loadingElements.forEach(el => {
+        el.style.opacity = '0.6';
+        el.style.pointerEvents = 'none';
+    });
+}
+
+// Hide loading state
+function hideLoadingState() {
+    const loadingElements = document.querySelectorAll('.stat-value, .chart-container');
+    loadingElements.forEach(el => {
+        el.style.opacity = '1';
+        el.style.pointerEvents = 'auto';
+    });
+}
+
+// Update stat cards
+function updateStatCards(filters) {
+    const statCards = document.querySelectorAll('.stat-card');
+    
+    statCards.forEach(card => {
+        const value = card.querySelector('.stat-value');
+        const change = card.querySelector('.stat-change');
+        
+        if (value) {
+            // Simulate data update
+            const currentValue = parseInt(value.textContent.replace(/[^\d]/g, '')) || 0;
+            const variation = Math.random() * 0.2 - 0.1; // ±10% variation
+            const newValue = Math.round(currentValue * (1 + variation));
+            
+            animateNumber(value, currentValue, newValue);
+        }
+        
+        if (change) {
+            // Update change indicator
+            const changePercent = (Math.random() * 20 - 10).toFixed(1);
+            const isPositive = changePercent > 0;
+            
+            change.className = `stat-change ${isPositive ? 'stat-positive' : 'stat-negative'}`;
+            change.innerHTML = `<i class="fas fa-arrow-${isPositive ? 'up' : 'down'}"></i> ${Math.abs(changePercent)}%`;
+        }
+    });
+}
+
+// Update charts with new data
+function updateCharts(filters) {
+    // This would typically make API calls to get filtered data
+    console.log('Updating charts with filters:', filters);
+}
+
+// Update leaderboard
+function updateLeaderboard(filters) {
+    const leaderboard = document.querySelector('.leaderboard');
+    if (!leaderboard) return;
+    
+    // Simulate leaderboard update
+    const entries = leaderboard.querySelectorAll('.player-entry');
+    entries.forEach(entry => {
+        const level = entry.querySelector('.player-level');
+        if (level) {
+            const currentLevel = parseInt(level.textContent.replace(/\D/g, '')) || 1;
+            const newLevel = Math.max(1, currentLevel + Math.floor(Math.random() * 3 - 1));
+            level.textContent = `Lv. ${newLevel}`;
+        }
+    });
+}
+
+// Update dashboard data based on filters
+function updateDashboardData(filters) {
+    // Update stat cards
+    updateStatCards(filters);
+    
+    // Update charts
+    updateCharts(filters);
+    
+    // Update leaderboard
+    updateLeaderboard(filters);
+}
+
+// Apply filters to dashboard - FIXED: Now properly defined
+function applyFilters(filters) {
+    console.log('Applying filters:', filters);
+    
+    // Show loading state
+    showLoadingState();
+    
+    // Simulate API call
+    setTimeout(() => {
+        updateDashboardData(filters);
+        hideLoadingState();
+    }, 1000);
+}
+
+// Global function for onclick handlers
+window.applyFilters = function() {
+    const filters = collectFilters();
+    applyFilters(filters);
 };
 
 // Initialize Charts
@@ -93,7 +267,7 @@ function initializeCharts() {
                     data: [25, 20, 18, 15, 12, 10],
                     backgroundColor: [
                         '#FFD700',
-                        '#3B82F6',
+                        '#3B82F6', 
                         '#10B981',
                         '#F59E0B',
                         '#EF4444',
@@ -102,20 +276,7 @@ function initializeCharts() {
                     borderWidth: 0
                 }]
             },
-            options: {
-                ...chartConfig,
-                plugins: {
-                    ...chartConfig.plugins,
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            color: '#F8FAFC',
-                            padding: 20,
-                            usePointStyle: true
-                        }
-                    }
-                }
-            }
+            options: chartConfig
         });
     }
 
@@ -155,31 +316,10 @@ function initializeCharts() {
                     tension: 0.4
                 }]
             },
-            options: {
-                ...chartConfig,
-                scales: {
-                    ...chartConfig.scales,
-                    y: {
-                        ...chartConfig.scales.y,
-                        min: 0,
-                        max: 100
-                    }
-                }
-            }
+            options: chartConfig
         });
     }
-}
-
-// Generate sample performance data
-function generatePerformanceData() {
-    const baseLatency = 25;
-    const data = [];
-    for (let i = 0; i < 24; i++) {
-        const variation = Math.sin(i * Math.PI / 12) * 15 + Math.random() * 10;
-        data.push(Math.max(5, baseLatency + variation));
-    }
-    return data;
-}
+} // <- FIXED: Added missing closing brace here
 
 // Initialize Filters
 function initializeFilters() {
@@ -189,20 +329,7 @@ function initializeFilters() {
 
     if (filterButton) {
         filterButton.addEventListener('click', function() {
-            const filters = {};
-            
-            filterSelects.forEach(select => {
-                if (select.value && select.value !== 'All') {
-                    filters[select.name || select.id] = select.value;
-                }
-            });
-            
-            filterInputs.forEach(input => {
-                if (input.value.trim()) {
-                    filters[input.name || input.id] = input.value.trim();
-                }
-            });
-            
+            const filters = collectFilters();
             applyFilters(filters);
         });
     }
@@ -214,141 +341,6 @@ function initializeFilters() {
             applyFilters(filters);
         }, 300));
     });
-}
-
-// Apply filters to dashboard
-function applyFilters(filters) {
-    console.log('Applying filters:', filters);
-    
-    // Show loading state
-    showLoadingState();
-    
-    // Simulate API call
-    setTimeout(() => {
-        updateDashboardData(filters);
-        hideLoadingState();
-    }, 1000);
-}
-
-// Collect current filter values
-function collectFilters() {
-    const filters = {};
-    const filterSelects = document.querySelectorAll('.filter-select');
-    const filterInputs = document.querySelectorAll('.filter-input');
-    
-    filterSelects.forEach(select => {
-        if (select.value && select.value !== 'All') {
-            filters[select.name || select.id] = select.value;
-        }
-    });
-    
-    filterInputs.forEach(input => {
-        if (input.value.trim()) {
-            filters[input.name || input.id] = input.value.trim();
-        }
-    });
-    
-    return filters;
-}
-
-// Update dashboard data based on filters
-function updateDashboardData(filters) {
-    // Update stat cards
-    updateStatCards(filters);
-    
-    // Update charts
-    updateCharts(filters);
-    
-    // Update leaderboard
-    updateLeaderboard(filters);
-}
-
-// Update stat cards
-function updateStatCards(filters) {
-    const statCards = document.querySelectorAll('.stat-card');
-    
-    statCards.forEach(card => {
-        const value = card.querySelector('.stat-value');
-        const change = card.querySelector('.stat-change');
-        
-        if (value) {
-            // Simulate data update
-            const currentValue = parseInt(value.textContent.replace(/[^\d]/g, ''));
-            const variation = Math.random() * 0.2 - 0.1; // ±10% variation
-            const newValue = Math.round(currentValue * (1 + variation));
-            
-            animateNumber(value, currentValue, newValue);
-        }
-        
-        if (change) {
-            // Update change indicator
-            const changePercent = (Math.random() * 20 - 10).toFixed(1);
-            const isPositive = changePercent > 0;
-            
-            change.className = `stat-change ${isPositive ? 'stat-positive' : 'stat-negative'}`;
-            change.innerHTML = `<i class="fas fa-arrow-${isPositive ? 'up' : 'down'}"></i> ${Math.abs(changePercent)}%`;
-        }
-    });
-}
-
-// Animate number changes
-function animateNumber(element, from, to) {
-    const duration = 1000;
-    const startTime = performance.now();
-    
-    function animate(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        const currentValue = Math.round(from + (to - from) * easeOutQuart(progress));
-        element.textContent = currentValue.toLocaleString();
-        
-        if (progress < 1) {
-            requestAnimationFrame(animate);
-        }
-    }
-    
-    requestAnimationFrame(animate);
-}
-
-// Easing function
-function easeOutQuart(t) {
-    return 1 - (--t) * t * t * t;
-}
-
-// Update charts with new data
-function updateCharts(filters) {
-    // This would typically make API calls to get filtered data
-    console.log('Updating charts with filters:', filters);
-}
-
-// Update leaderboard
-function updateLeaderboard(filters) {
-    const leaderboard = document.querySelector('.leaderboard');
-    if (!leaderboard) return;
-    
-    // Simulate leaderboard update
-    const entries = leaderboard.querySelectorAll('.player-entry');
-    entries.forEach(entry => {
-        const level = entry.querySelector('.player-level');
-        if (level) {
-            const currentLevel = parseInt(level.textContent.replace(/\D/g, ''));
-            const newLevel = Math.max(1, currentLevel + Math.floor(Math.random() * 3 - 1));
-            level.textContent = `Level ${newLevel}`;
-        }
-    });
-}
-
-// Initialize real-time updates
-function initializeRealTimeUpdates() {
-    // Update every 30 seconds
-    setInterval(function() {
-        const filters = collectFilters();
-        updateDashboardData(filters);
-    }, 30000);
-    
-    // Add connection status indicator
-    createConnectionStatusIndicator();
 }
 
 // Create connection status indicator
@@ -383,35 +375,16 @@ function createConnectionStatusIndicator() {
     }, 2000);
 }
 
-// Show loading state
-function showLoadingState() {
-    const loadingElements = document.querySelectorAll('.stat-value, .chart-container');
-    loadingElements.forEach(el => {
-        el.style.opacity = '0.6';
-        el.style.pointerEvents = 'none';
-    });
-}
-
-// Hide loading state
-function hideLoadingState() {
-    const loadingElements = document.querySelectorAll('.stat-value, .chart-container');
-    loadingElements.forEach(el => {
-        el.style.opacity = '1';
-        el.style.pointerEvents = 'auto';
-    });
-}
-
-// Utility: Debounce function
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
+// Initialize real-time updates
+function initializeRealTimeUpdates() {
+    // Update every 30 seconds
+    setInterval(function() {
+        const filters = collectFilters();
+        updateDashboardData(filters);
+    }, 30000);
+    
+    // Add connection status indicator
+    createConnectionStatusIndicator();
 }
 
 // Export functions for global access
@@ -454,11 +427,11 @@ document.addEventListener('mouseout', function(e) {
 });
 
 // Console welcome message
-console.log(`
-🎮 WoW DataHub Dashboard Loaded
-=====================================
-Version: 1.0.0
-Built with: Chart.js, Vanilla JS
-Real-time updates: Enabled
-=====================================
-`);
+console.log('\n' +
+    'WoW DataHub Dashboard Loaded\n' +
+    '=====================================\n' +
+    'Version: 1.0.0\n' +
+    'Built with: Chart.js, Vanilla JS\n' +
+    'Real-time updates: Enabled\n' +
+    '====================================='
+);
