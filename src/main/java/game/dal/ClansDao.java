@@ -27,16 +27,97 @@ public class ClansDao {
 	}
 	
 	/**
-	 * update an existing Clans record
-	 * 
-	 * change raceName (pk) == delete exist , add new (lots of )
-	 * add enum race?
+	 * Get clan by clan name
 	 */
-	
+	public static Clans getClanByClanName(Connection cxn, String clanName) throws SQLException {
+		String selectClan = "SELECT clanName, race FROM Clans WHERE clanName = ?;";
+		
+		try (PreparedStatement selectStmt = cxn.prepareStatement(selectClan)) {
+			selectStmt.setString(1, clanName);
+			
+			try (ResultSet result = selectStmt.executeQuery()) {
+				if (result.next()) {
+					String raceStr = result.getString("race").toUpperCase();
+					Clans.Races race = Clans.Races.valueOf(raceStr);
+					return new Clans(clanName, race);
+				} else {
+					return null;
+				}
+			}
+		}
+	}
+
+	/**
+	 * update an existing Clans record (clanName) in the database
+	 * returns a Clans object
+	 */
+	public static Clans updateClanName(
+			Connection cxn,
+			Clans oldClan,
+			String newClanName
+	) throws SQLException {
+		String query_updateClanName = """
+				UPDATE Clans
+				SET clanName = ?
+				WHERE clanName = ?;
+				""";
+		
+		try (PreparedStatement pstmt = cxn.prepareStatement(query_updateClanName)) {
+			pstmt.setString(1, newClanName);
+			pstmt.setString(2, oldClan.getClanName());
+			
+			pstmt.executeUpdate();
+			
+			return new Clans(
+					newClanName,
+					oldClan.getRace()
+					);
+		}
+	}
 	
 	
 	/**
 	 * delete an existing Clans record
 	 */
+	public static void deleteClan(
+			Connection cxn,
+			Clans clan
+	) throws SQLException {
+		String deleteClan = "DELETE FROM Clans WHERE clanName = ?;";
+		
+		try (PreparedStatement pstmt = cxn.prepareStatement(deleteClan)) {
+			pstmt.setString(1, clan.getClanName());
+			pstmt.executeUpdate();
+		}
+	}
+	
+	/*
+	 * return a list of clans of a specific race
+	 */
+	public static List<Clans> getClansbyRace(
+			Connection cxn,
+			Clans.Races race
+	) throws SQLException {
+		String query_RaceClan = """
+				SELECT *
+				FROM Clans
+				WHERE race = ?;
+				""";
+		
+		List<Clans> clans = new ArrayList<>();
+		
+		try (PreparedStatement pstmt = cxn.prepareStatement(query_RaceClan)) {
+			pstmt.setString(1, race.name().toLowerCase());
+			
+			try (ResultSet rs = pstmt.executeQuery()) {
+	            while (rs.next()) {
+	                String clanName = rs.getString("clanName");
+	                Clans.Races clanRace = Clans.Races.valueOf(rs.getString("race").toUpperCase());
+	                clans.add(new Clans(clanName, clanRace));
+	            }
+	        }
+		}
+		return clans;
+	}
 
 }
