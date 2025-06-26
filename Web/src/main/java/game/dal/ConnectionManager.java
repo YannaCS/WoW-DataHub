@@ -33,14 +33,14 @@ public class ConnectionManager {
   // User to connect to your database instance. By default, this is "root2".
   private static final String USER = "root";
   // Password for the user.
-  private static final String PASSWORD = "password";
+  private static final String PASSWORD = "Neu2025!";
   // URI to your database server. If running on the same machine, then
   // this is "localhost".
   private static final String HOSTNAME = "localhost";
   // Port to your database server. By default, this is 3307.
   private static final int PORT = 3306;
   // Name of the MySQL schema that contains your tables.
-  private static final String SCHEMA = "CS5200Project";
+  private static final String SCHEMA = "WoWDataHub";
   // Default timezone for MySQL server.
   private static final String TIMEZONE = "UTC";
 
