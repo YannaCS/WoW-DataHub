@@ -1,10 +1,10 @@
 package game.servlet;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -160,55 +160,62 @@ public class ETLServlet extends HttpServlet {
     private void handleStartRealmSync(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         
-        // Get WoW API credentials (in real app, these would be from config)
+        // Get WoW API credentials
         String clientId = getServletContext().getInitParameter("wow.api.client.id");
         String clientSecret = getServletContext().getInitParameter("wow.api.client.secret");
         
         if (clientId == null || clientSecret == null) {
-            // Use dummy credentials for testing
-            clientId = "dummy_client_id";
-            clientSecret = "dummy_client_secret";
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
+                             "WoW API credentials not configured");
+            return;
         }
         
-        ETLProcessor processor = new ETLProcessor(clientId, clientSecret);
+        String jobId = "REALM_SYNC_" + System.currentTimeMillis();
+        ETLProcessor processor = new ETLProcessor(clientId, clientSecret, 50, 50);
         
-        // Start ETL job asynchronously
+        // Start ETL job asynchronously with job ID
         CompletableFuture<ETLResult> future = CompletableFuture.supplyAsync(() -> {
-            return processor.processRealmData();
+            return processor.processRealmData(jobId);  // Pass job ID here
         });
         
-        String jobId = "REALM_SYNC_" + System.currentTimeMillis();
         runningJobs.put(jobId, future);
         
         // Return job ID immediately
         ETLJobStartResponse startResponse = new ETLJobStartResponse();
         startResponse.setJobId(jobId);
         startResponse.setStatus("STARTED");
-        startResponse.setMessage("Realm synchronization job started");
+        startResponse.setMessage("Realm synchronization job started (max 50 records)");
         
         response.getWriter().write(objectMapper.writeValueAsString(startResponse));
     }
-    
+
     private void handleStartCharacterSync(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         
-        String clientId = "dummy_client_id";
-        String clientSecret = "dummy_client_secret";
+        // Get credentials
+        String clientId = getServletContext().getInitParameter("wow.api.client.id");
+        String clientSecret = getServletContext().getInitParameter("wow.api.client.secret");
         
-        ETLProcessor processor = new ETLProcessor(clientId, clientSecret);
-        
-        // Start character sync job asynchronously
-        CompletableFuture<ETLResult> future = CompletableFuture.supplyAsync(() -> {
-            return processor.processCharacterData();
-        });
+        if (clientId == null || clientSecret == null) {
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
+                             "WoW API credentials not configured");
+            return;
+        }
         
         String jobId = "CHARACTER_SYNC_" + System.currentTimeMillis();
+        ETLProcessor processor = new ETLProcessor(clientId, clientSecret, 50, 50);
+        
+        // Start character sync job asynchronously with job ID
+        CompletableFuture<ETLResult> future = CompletableFuture.supplyAsync(() -> {
+            return processor.processCharacterData(jobId);  // Pass job ID here
+        });
+        
         runningJobs.put(jobId, future);
         
         ETLJobStartResponse startResponse = new ETLJobStartResponse();
         startResponse.setJobId(jobId);
         startResponse.setStatus("STARTED");
-        startResponse.setMessage("Character synchronization job started");
+        startResponse.setMessage("Character synchronization job started (max 50 records)");
         
         response.getWriter().write(objectMapper.writeValueAsString(startResponse));
     }

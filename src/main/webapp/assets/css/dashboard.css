@@ -301,7 +301,29 @@ body {
     padding: 2rem;
     border: 1px solid var(--border-color);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    position: relative;
+    height: 300px !important;  /* Force a reasonable height */
+    max-height: 300px;
+    min-height: 300px !important;
+    width: 100%;
+    overflow: hidden !important;
 }
+/* Target specific chart canvases */
+#activityChart,
+#classChart,
+#levelChart,
+#performanceChart {
+    height: 300px !important;
+    max-height: 300px !important;
+    width: 100% !important;
+}
+
+/* Force parent containers */
+.chart-container canvas {
+    height: 300px !important;
+    max-height: 300px !important;
+}
+
 
 .chart-title {
     font-size: 1.4rem;

@@ -1,5 +1,7 @@
 package game.dal;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -30,6 +32,7 @@ public class ConnectionManager {
    */
   private ConnectionManager() { }
 
+  /*
   // User to connect to your database instance. By default, this is "root2".
   private static final String USER = "root";
   // Password for the user.
@@ -42,8 +45,17 @@ public class ConnectionManager {
   // Name of the MySQL schema that contains your tables.
   private static final String SCHEMA = "WoWDataHub";
   // Default timezone for MySQL server.
+*/
   private static final String TIMEZONE = "UTC";
-
+  
+  //Update the connection parameters
+  private static final Properties DB_PROPS = loadDatabaseProperties();
+  private static final String USER = DB_PROPS.getProperty("db.username", "root");
+  private static final String PASSWORD = DB_PROPS.getProperty("db.password", "password");
+  private static final String HOSTNAME = DB_PROPS.getProperty("db.hostname", "localhost");
+  private static final int PORT = Integer.parseInt(DB_PROPS.getProperty("db.port", "3306"));
+  private static final String SCHEMA = DB_PROPS.getProperty("db.schema", "WoWDataHub");
+  
   /** Get the connection to the database instance. */
   public static Connection getConnection() throws SQLException {
     Connection connection = null;
@@ -97,4 +109,20 @@ public class ConnectionManager {
       connectionProperties
     );
   }
+
+//Add this method
+private static Properties loadDatabaseProperties() {
+ Properties props = new Properties();
+ try (InputStream input = ConnectionManager.class.getClassLoader()
+         .getResourceAsStream("database.properties")) {
+     if (input != null) {
+         props.load(input);
+     }
+ } catch (IOException e) {
+     e.printStackTrace();
+ }
+ return props;
 }
+
+}
+

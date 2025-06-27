@@ -1,114 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
-         http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
-         version="4.0">
-         
-    <display-name>WoW DataHub</display-name>
-    <description>World of Warcraft Data Management System</description>
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee 
+         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
     
-    <!-- Welcome File List -->
+    <display-name>WoW DataHub</display-name>
+    
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
-        <welcome-file>dashboard</welcome-file>
     </welcome-file-list>
     
-    <!-- Dashboard Servlet -->
-    <servlet>
-        <servlet-name>DashboardServlet</servlet-name>
-        <servlet-class>game.servlet.DashboardServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>DashboardServlet</servlet-name>
-        <url-pattern>/dashboard</url-pattern>
-    </servlet-mapping>
+    <!-- All servlets are configured using @WebServlet annotations -->
+    <!-- No servlet mappings in web.xml to avoid conflicts -->
     
-    <!-- Players Management Servlet -->
-    <servlet>
-        <servlet-name>PlayersServlet</servlet-name>
-        <servlet-class>game.servlet.PlayersServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>PlayersServlet</servlet-name>
-        <url-pattern>/players</url-pattern>
-    </servlet-mapping>
-    
-    <!-- Characters Management Servlet -->
-    <servlet>
-        <servlet-name>CharactersServlet</servlet-name>
-        <servlet-class>game.servlet.CharactersServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>CharactersServlet</servlet-name>
-        <url-pattern>/characters</url-pattern>
-    </servlet-mapping>
-    
-    <!-- Items Management Servlet -->
-    <servlet>
-        <servlet-name>ItemsServlet</servlet-name>
-        <servlet-class>game.servlet.ItemsServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ItemsServlet</servlet-name>
-        <url-pattern>/items</url-pattern>
-    </servlet-mapping>
-    
-    <!-- ETL Management Servlet -->
-    <servlet>
-        <servlet-name>ETLServlet</servlet-name>
-        <servlet-class>game.servlet.ETLServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ETLServlet</servlet-name>
-        <url-pattern>/etl</url-pattern>
-    </servlet-mapping>
-    
-    <!-- Context Parameters -->
+    <!-- WoW API Configuration -->
     <context-param>
         <param-name>wow.api.client.id</param-name>
-        <param-value>${WOW_CLIENT_ID}</param-value>
+        <param-value>7b510b4bb81e44ae8fbd9294a0a6e7cf</param-value>
     </context-param>
+    
     <context-param>
         <param-name>wow.api.client.secret</param-name>
-        <param-value>${WOW_CLIENT_SECRET}</param-value>
+        <param-value>iJYELZwo4kyxQkV6Bwe4LwCaqb87te3M</param-value>
     </context-param>
     
-    <!-- Session Configuration -->
-    <session-config>
-        <session-timeout>30</session-timeout>
-    </session-config>
-    
-    <!-- Error Pages -->
-    <error-page>
-        <error-code>404</error-code>
-        <location>/error/404.jsp</location>
-    </error-page>
-    <error-page>
-        <error-code>500</error-code>
-        <location>/error/500.jsp</location>
-    </error-page>
-    
-    <!-- Security Constraints -->
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Admin Area</web-resource-name>
-            <url-pattern>/admin/*</url-pattern>
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>admin</role-name>
-        </auth-constraint>
-    </security-constraint>
-    
-    <!-- MIME Type Mappings -->
-    <mime-mapping>
-        <extension>css</extension>
-        <mime-type>text/css</mime-type>
-    </mime-mapping>
-    <mime-mapping>
-        <extension>js</extension>
-        <mime-type>application/javascript</mime-type>
-    </mime-mapping>
+    <context-param>
+        <param-name>wow.api.regions</param-name>
+        <param-value>us,eu</param-value>
+    </context-param>
     
 </web-app>
