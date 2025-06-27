@@ -1,4 +1,3 @@
-CREATE SCHEMA WoWDataHub IF NOT EXISTS;
 -- Update schema name and add ETL tables
 USE WoWDataHub;
 
