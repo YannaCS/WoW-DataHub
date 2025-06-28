@@ -1,33 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee 
-         https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
-         version="6.0">
-    
-    <display-name>WoW DataHub</display-name>
-    
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+         https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd"
+         version="5.0">
+
+    <display-name>WoW Data Hub</display-name>
+    <description>World of Warcraft Data Management System</description>
+
+    <!-- Welcome file list -->
     <welcome-file-list>
-        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>FindCharacter.jsp</welcome-file>
     </welcome-file-list>
-    
-    <!-- All servlets are configured using @WebServlet annotations -->
-    <!-- No servlet mappings in web.xml to avoid conflicts -->
-    
-    <!-- WoW API Configuration -->
-    <context-param>
-        <param-name>wow.api.client.id</param-name>
-        <param-value>7b510b4bb81e44ae8fbd9294a0a6e7cf</param-value>
-    </context-param>
-    
-    <context-param>
-        <param-name>wow.api.client.secret</param-name>
-        <param-value>iJYELZwo4kyxQkV6Bwe4LwCaqb87te3M</param-value>
-    </context-param>
-    
-    <context-param>
-        <param-name>wow.api.regions</param-name>
-        <param-value>us,eu</param-value>
-    </context-param>
-    
+
 </web-app>

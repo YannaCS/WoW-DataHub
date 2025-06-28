@@ -1,7 +1,10 @@
 package game.servlet;
 
-import game.dal.*;
-import game.model.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -11,89 +14,65 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.annotation.*;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
+import game.dal.*;
+import game.model.*;
 
 @WebServlet("/characterdetailreport")
 public class CharacterDetailReport extends HttpServlet {
-  private static final long serialVersionUID = 1L;
-
-  private static final String TITLE_MESSAGE = "title";
-
-
-  @Override
-  public void doGet(HttpServletRequest req, HttpServletResponse resp)
-    throws ServletException, IOException {
-    // Map for storing messages.
-    Map<String, String> messages = new HashMap<>();
-    req.setAttribute("messages", messages);
-
-    // Retrieve character ID
-    String charIdStr = req.getParameter("charid");
-    if (charIdStr == null || charIdStr.trim().isEmpty()) {
-      messages.put(TITLE_MESSAGE, "nvalid Character ID");
-    } else {
-      messages.put(TITLE_MESSAGE, "Character Detail for " + charIdStr);
+    
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+            throws ServletException, IOException {
+        // Map for storing messages
+        Map<String, String> messages = new HashMap<>();
+        req.setAttribute("messages", messages);
+        
+        // Retrieve and validate charID parameter
+        String charIDStr = req.getParameter("charid");
+        if (charIDStr == null || charIDStr.trim().isEmpty()) {
+            messages.put("success", "Please provide a valid character ID.");
+        } else {
+            try {
+                int charID = Integer.parseInt(charIDStr);
+                
+                try (Connection connection = ConnectionManager.getConnection()) {
+                    // Get character details
+                    Characters character = CharactersDao.getCharacterByCharID(connection, charID);
+                    if (character == null) {
+                        messages.put("success", "No character found with ID " + charID);
+                    } else {
+                        messages.put("success", "Displaying details for character ID " + charID);
+                        req.setAttribute("character", character);
+                        
+                        // Get character's inventory
+                        List<Inventory> inventory = InventoryDao.getInventoryOnlyByCharacters(connection, character);
+                        req.setAttribute("inventory", inventory);
+                        
+                        // Get character's equipped items
+                        List<EquippedItems> equippedItems = EquippedItemsDao.getEquippedItemsOnlyByCharacters(connection, character);
+                        req.setAttribute("equippedItems", equippedItems);
+                        
+                        // Get character's wealth
+                        List<CharacterWealth> wealth = CharacterWealthDao.getCharacterWealthByCharacter(connection, character);
+                        req.setAttribute("wealth", wealth);
+                        
+                        // Get character's unlocked jobs
+                        List<CharacterUnlockedJob> unlockedJobs = CharacterUnlockedJobDao.getCharacterUnlockedJobByCharID(connection, charID);
+                        req.setAttribute("unlockedJobs", unlockedJobs);
+                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    throw new IOException(e);
+                }
+            } catch (NumberFormatException e) {
+                messages.put("success", "Invalid character ID format.");
+            }
+        }
+        
+        req.getRequestDispatcher("/CharacterDetailReport.jsp").forward(req, resp);
     }
-
-    // Retrieve Character, and store in the request.
-    try (Connection cxn = ConnectionManager.getConnection()) {
-      int charId = Integer.parseInt(charIdStr);
-      Characters character = CharactersDao.getCharacterByCharID(cxn, charId);
-      if (character == null) {
-          messages.put(TITLE_MESSAGE, "No character found with ID: " + charId);
-          req.getRequestDispatcher("/FindCharacter.jsp").forward(req, resp);
-          return;
-      }
-      
-      // Get character unlocked jobs
-      List<CharacterUnlockedJob> unlockedJobs = new ArrayList<>();
-      unlockedJobs = CharacterUnlockedJobDao.getCharacterUnlockedJobByCharID(cxn, charId);
-      
-      // Get character wealth
-      List<CharacterWealth> wealthList = CharacterWealthDao.getCharacterWealthByCharacter(cxn, character);
-      
-      
-      //Get Gears
-      List<Gears> gearList = new ArrayList<Gears>();
-      // first Get EquippedItems
-      List<EquippedItems> equippedItems = EquippedItemsDao.getEquippedItemsOnlyByCharacters(cxn, character);
-      for(EquippedItems eachItem:equippedItems) {
-          Gears gear = GearsDao.getGearByItemID(cxn, eachItem.getItemID());
-          gearList.add(gear);
-
-      }
-      
-      //get Inventory 
-      List<Inventory>  inventoryList = new ArrayList<Inventory>();
-      inventoryList = InventoryDao.getInventoryOnlyByCharacters(cxn, character);
-      
-      //get Item Name from ItemId
-      List<String> itemNameList = new ArrayList<String>();
-      for(Inventory inven:inventoryList) {
-    	  itemNameList.add(ItemsDao.getNameByItemID(cxn,inven.getInstance()));
-      }
-      
-      req.setAttribute("character", character);
-      req.setAttribute("unlockedJobs", unlockedJobs);
-      req.setAttribute("characterWealthList", wealthList);
-      req.setAttribute("gearList", gearList);
-      req.setAttribute("inventoryList", inventoryList);
-      req.setAttribute("itemNameList", itemNameList);
-
-      
-      messages.put(TITLE_MESSAGE, character.getFirstName() + " " + character.getLastName());
-      
-      req.getRequestDispatcher("/CharacterDetailReport.jsp").forward(req, resp);
-    } catch (SQLException e) {
-      e.printStackTrace();
-      throw new IOException(e);
+    
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+            throws ServletException, IOException {
+        doGet(req, resp);
     }
-  }
- 
-  
 }

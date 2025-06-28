@@ -1,7 +1,5 @@
 package game.dal;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -12,18 +10,6 @@ import java.util.Properties;
  *
  * ConnectionManager uses the MySQL Connector/J driver to connect to
  * your local MySQL instance.
- *
- * In our example, we will create a DAO (data access object) java
- * class to interact with each MySQL table. The DAO java classes will
- * use ConnectionManager to open and close connections.
- *
- *
- * Before using, you must edit the values for PASSWORD and SCHEMA
- * below.  PASSWORD must be the MySQL password you configured when you
- * installed MySQL server, and SCHEMA must be the name of the database
- * schema that the application will use.
- * 
- * These codes are provided by Professor Richard Cobbe
  */
 public class ConnectionManager {
 
@@ -32,30 +18,19 @@ public class ConnectionManager {
    */
   private ConnectionManager() { }
 
-  /*
-  // User to connect to your database instance. By default, this is "root2".
+  // User to connect to your database instance. By default, this is "root".
   private static final String USER = "root";
   // Password for the user.
   private static final String PASSWORD = "Neu2025!";
-  // URI to your database server. If running on the same machine, then
-  // this is "localhost".
+  // URI to your database server. If running on the same machine, then this is "localhost".
   private static final String HOSTNAME = "localhost";
-  // Port to your database server. By default, this is 3307.
+  // Port to your database server. By default, this is 3306.
   private static final int PORT = 3306;
-  // Name of the MySQL schema that contains your tables.
+  // Name of the MySQL schema that contains your tables - UPDATED FOR WOW DATA
   private static final String SCHEMA = "WoWDataHub";
   // Default timezone for MySQL server.
-*/
   private static final String TIMEZONE = "UTC";
-  
-  //Update the connection parameters
-  private static final Properties DB_PROPS = loadDatabaseProperties();
-  private static final String USER = DB_PROPS.getProperty("db.username", "root");
-  private static final String PASSWORD = DB_PROPS.getProperty("db.password", "password");
-  private static final String HOSTNAME = DB_PROPS.getProperty("db.hostname", "localhost");
-  private static final int PORT = Integer.parseInt(DB_PROPS.getProperty("db.port", "3306"));
-  private static final String SCHEMA = DB_PROPS.getProperty("db.schema", "WoWDataHub");
-  
+
   /** Get the connection to the database instance. */
   public static Connection getConnection() throws SQLException {
     Connection connection = null;
@@ -65,9 +40,7 @@ public class ConnectionManager {
       connectionProperties.put("password", PASSWORD);
       connectionProperties.put("serverTimezone", TIMEZONE);
       // Ensure the JDBC driver is loaded by retrieving the runtime
-      // Class descriptor.  Otherwise, Tomcat may have issues loading
-      // libraries in the proper order.  One alternative is calling
-      // this in the HttpServlet init() override.
+      // Class descriptor.
       try {
         Class.forName("com.mysql.cj.jdbc.Driver");
       } catch (ClassNotFoundException e) {
@@ -92,8 +65,7 @@ public class ConnectionManager {
 
   /**
    * Open and return a connection to the database server that is not
-   * associated with a particular schema.  We use this for operations
-   * that delete and re-create the schema; see Driver.java for an example.
+   * associated with a particular schema.
    */
   public static Connection getSchemalessConnection() throws SQLException {
     Properties connectionProperties = new Properties();
@@ -109,20 +81,4 @@ public class ConnectionManager {
       connectionProperties
     );
   }
-
-//Add this method
-private static Properties loadDatabaseProperties() {
- Properties props = new Properties();
- try (InputStream input = ConnectionManager.class.getClassLoader()
-         .getResourceAsStream("database.properties")) {
-     if (input != null) {
-         props.load(input);
-     }
- } catch (IOException e) {
-     e.printStackTrace();
- }
- return props;
 }
-
-}
-
