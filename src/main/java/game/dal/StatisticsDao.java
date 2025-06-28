@@ -26,6 +26,13 @@ public class StatisticsDao {
 			insertStmt.executeUpdate();
 
 			return new Statistics(statsName, description);
+		} catch (SQLException e) {
+			if (e.getMessage().contains("Duplicate entry")) {
+				// If duplicate, return the existing record
+				return getStatisticsByName(cxn, statsName);
+			} else {
+				throw e;
+			}
 		}
 	}
 	

@@ -30,6 +30,13 @@ public class CurrenciesDao {
 			insertStmt.executeUpdate();
 
 			return new Currencies(currencyName,cap,weeklyCap);
+		} catch (SQLException e) {
+			if (e.getMessage().contains("Duplicate entry")) {
+				// If duplicate, return the existing record
+				return getCurrenciesByName(cxn, currencyName);
+			} else {
+				throw e;
+			}
 		}
 	}
 

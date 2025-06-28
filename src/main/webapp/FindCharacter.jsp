@@ -77,6 +77,7 @@
     </style>
 </head>
 <body>
+	
     <div class="container">
         <h1>🏰 WoW Data Hub - Find Characters</h1>
         
@@ -119,5 +120,11 @@
             <a href="weaponupdate" class="character-link">⚔️ Update Weapon</a>
         </div>
     </div>
+    <div style="text-align: center; margin: 20px 0;">
+    <a href="etl" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+        🚀 Run ETL Process
+    </a>
+</div>
+    
 </body>
 </html>

@@ -24,6 +24,13 @@ public class ClansDao {
 			pstmt.executeUpdate();
 			
 			return new Clans(clanName, race);
+		} catch (SQLException e) {
+			if (e.getMessage().contains("Duplicate entry")) {
+				// If duplicate, return the existing record
+				return getClanRacebyClanName(cxn, clanName);
+			} else {
+				throw e;
+			}
 		}
 	}
 	

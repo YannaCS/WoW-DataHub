@@ -29,7 +29,14 @@ public class JobsForGearDao{
         insertStmt.executeUpdate();
         return new JobsForGear(gear, job);
         
-      }
+      } catch (SQLException e) {
+		    if (e.getMessage().contains("Duplicate entry")) {
+		        // Silently ignore duplicates for ETL process
+		        return null; // or return existing record if you have a get method
+		    } else {
+		        throw e;
+		    }
+		}
 	}
   
   /**
