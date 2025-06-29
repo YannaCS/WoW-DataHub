@@ -8,6 +8,7 @@ import game.model.*;
 public class ClansDao {
 	/**
 	 * create a new Clans record (clanName + race) in the database
+	 * VALIDATES race-clan relationship according to data model requirements
 	 * @return a Clans object
 	 */
 	public static Clans create(
@@ -15,6 +16,11 @@ public class ClansDao {
 			String clanName,
 			Clans.Races race
 	) throws SQLException {
+		// Validate race-clan relationship according to data model
+		if (!isValidRaceClanCombination(clanName, race)) {
+			throw new SQLException("Invalid race-clan combination: " + clanName + " cannot be of race " + race);
+		}
+		
 		String insertDegree = "INSERT INTO Clans (clanName, race) VALUES (?, ?);";
 		
 		try (PreparedStatement pstmt = cxn.prepareStatement(insertDegree)) {
@@ -32,6 +38,38 @@ public class ClansDao {
 				throw e;
 			}
 		}
+	}
+	
+	/**
+	 * Validates race-clan combinations according to data model requirements
+	 * Each race has exactly two possible clans
+	 */
+	private static boolean isValidRaceClanCombination(String clanName, Clans.Races race) {
+		Map<Clans.Races, Set<String>> validCombinations = Map.of(
+			Clans.Races.HUMAN, Set.of("Midlanders", "Highlanders", "Stormwind Alliance", "Kul Tiran Fleet", "Gilnean Pack"),
+			Clans.Races.ELF, Set.of("Duskwight", "Wildwood", "Darnassus Sentinels", "Void Elves", "Blood Elves"),
+			Clans.Races.DWARF, Set.of("Ironforge Dwarves", "Wildhammer Clan", "Dark Iron Dwarves"),
+			Clans.Races.ORC, Set.of("Orgrimmar Horde", "Mag'har Orcs", "Undercity Forsaken"),
+			Clans.Races.GOBLIN, Set.of("Bilgewater Cartel", "Darkspear Trolls", "Zandalari Empire")
+		);
+		
+		Set<String> validClansForRace = validCombinations.get(race);
+		return validClansForRace != null && validClansForRace.contains(clanName);
+	}
+	
+	/**
+	 * Get all valid clan names for a specific race
+	 */
+	public static Set<String> getValidClansForRace(Clans.Races race) {
+		Map<Clans.Races, Set<String>> validCombinations = Map.of(
+			Clans.Races.HUMAN, Set.of("Midlanders", "Highlanders", "Stormwind Alliance", "Kul Tiran Fleet", "Gilnean Pack"),
+			Clans.Races.ELF, Set.of("Duskwight", "Wildwood", "Darnassus Sentinels", "Void Elves", "Blood Elves"),
+			Clans.Races.DWARF, Set.of("Ironforge Dwarves", "Wildhammer Clan", "Dark Iron Dwarves"),
+			Clans.Races.ORC, Set.of("Orgrimmar Horde", "Mag'har Orcs", "Undercity Forsaken"),
+			Clans.Races.GOBLIN, Set.of("Bilgewater Cartel", "Darkspear Trolls", "Zandalari Empire")
+		);
+		
+		return validCombinations.getOrDefault(race, Set.of());
 	}
 	
 	/**
@@ -73,6 +111,11 @@ public class ClansDao {
 			Clans oldClan,
 			String newClanName
 	) throws SQLException {
+		// Validate new race-clan combination
+		if (!isValidRaceClanCombination(newClanName, oldClan.getRace())) {
+			throw new SQLException("Invalid race-clan combination: " + newClanName + " cannot be of race " + oldClan.getRace());
+		}
+		
 		String query_updateClanName = """
 				UPDATE Clans
 				SET clanName = ?

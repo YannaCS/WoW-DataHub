@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import game.dal.*;
@@ -40,11 +41,16 @@ public class WeaponUpdate extends HttpServlet {
                     } else {
                         req.setAttribute("character", character);
                         
-                        // Get character's weapons from inventory
-                        java.util.List<Weapons> weapons = WeaponsDao.getWeaponsByCharacter(connection, charID);
+                        // Get character's weapons (from inventory or fallback to available weapons)
+                        List<Weapons> weapons = WeaponsDao.getWeaponsByCharacter(connection, charID);
                         req.setAttribute("weapons", weapons);
                         
-                        messages.put("success", "Select a weapon to equip for " + character.getFirstName());
+                        if (weapons.isEmpty()) {
+                            messages.put("warning", "No weapons available for " + character.getFirstName() + 
+                                       ". Try running the ETL process to add more weapons to the database.");
+                        } else {
+                            messages.put("success", "Select a weapon to equip for " + character.getFirstName());
+                        }
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -86,15 +92,29 @@ public class WeaponUpdate extends HttpServlet {
                     } else if (weapon == null) {
                         messages.put("success", "No weapon found with ID " + weaponID);
                     } else {
-                        // Update character's weapon
-                        CharactersDao.updateWeaponWeared(connection, character, weapon);
-                        
-                        // Get updated character for display
-                        character = CharactersDao.getCharacterByCharID(connection, charID);
-                        req.setAttribute("character", character);
-                        
-                        messages.put("success", "Successfully updated " + character.getFirstName() + 
-                                   "'s weapon to " + weapon.getItemName());
+                        try {
+                            // Use business rules service for weapon equipping
+                            game.service.BusinessRulesService.equipWeapon(connection, character, weapon);
+                            
+                            // Get updated character for display
+                            character = CharactersDao.getCharacterByCharID(connection, charID);
+                            req.setAttribute("character", character);
+                            
+                            // Get available weapons again
+                            List<Weapons> weapons = WeaponsDao.getWeaponsByCharacter(connection, charID);
+                            req.setAttribute("weapons", weapons);
+                            
+                            messages.put("success", "Successfully updated " + character.getFirstName() + 
+                                       "'s weapon to " + weapon.getItemName() + ". Now playing as " + weapon.getWearableJob());
+                            
+                        } catch (game.service.BusinessRulesService.BusinessRuleException e) {
+                            messages.put("error", "Cannot equip weapon: " + e.getMessage());
+                            
+                            // Still display character and weapons for retry
+                            req.setAttribute("character", character);
+                            List<Weapons> weapons = WeaponsDao.getWeaponsByCharacter(connection, charID);
+                            req.setAttribute("weapons", weapons);
+                        }
                     }
                 } catch (SQLException e) {
                     e.printStackTrace();
