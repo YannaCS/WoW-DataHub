@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,63 +21,64 @@ public class PlayersDao{
    * This returns a Players.
    */
   public static Players create(
-	Connection cxn,
-    String firstName,
-	String lastName,
-	String emailAddress
-	) throws SQLException {
-	  final String insertPlayers =
-	    "INSERT INTO Players (firstName, lastName, emailAddress) VALUES (?, ?, ?);";
+		    Connection cxn,
+		    String firstName,
+		    String lastName,
+		    String emailAddress
+		) throws SQLException {
+		    final String insertPlayers =
+		        "INSERT INTO Players (firstName, lastName, emailAddress, lastActiveDateTime) VALUES (?, ?, ?, NOW());";
 
-      try (PreparedStatement insertStmt = cxn.prepareStatement(insertPlayers, Statement.RETURN_GENERATED_KEYS)) {
-    	insertStmt.setString(1, firstName);
-        insertStmt.setString(2, lastName);
-        insertStmt.setString(3, emailAddress);
-        insertStmt.executeUpdate();
-        
-        try (ResultSet generatedKeys = insertStmt.getGeneratedKeys()) {
-          if (generatedKeys.next()) {
-      	    int playersID = generatedKeys.getInt(1);
-      	    return new Players(playersID, firstName, lastName, emailAddress);
-      	  } else {
-      	  throw new SQLException("Failed to retrieve generated userID.");
-      	  }
-      	} 
-      }
-	}
+		    try (PreparedStatement insertStmt = cxn.prepareStatement(insertPlayers, Statement.RETURN_GENERATED_KEYS)) {
+		        insertStmt.setString(1, firstName);
+		        insertStmt.setString(2, lastName);
+		        insertStmt.setString(3, emailAddress);
+		        insertStmt.executeUpdate();
+		        
+		        try (ResultSet generatedKeys = insertStmt.getGeneratedKeys()) {
+		            if (generatedKeys.next()) {
+		                int playersID = generatedKeys.getInt(1);
+		                return new Players(playersID, firstName, lastName, emailAddress, LocalDateTime.now());
+		            } else {
+		                throw new SQLException("Failed to retrieve generated userID.");
+		            }
+		        } 
+		    }
+		}
   
   /**
    * Get the Players record by fetching it from MySQL instance.
    * This runs a SELECT statement and returns a single Players instance based on playerID.
    */
   public static Players getPlayerByPlayerID(
-	Connection cxn,
-    int playerID
-  )  throws SQLException {
-     final String selectPlayer =
-       """
-       SELECT playerID, firstName, lastName, emailAddress
-       FROM Players 
-       WHERE playerID = ?;
-       """;
+		    Connection cxn,
+		    int playerID
+		) throws SQLException {
+		    final String selectPlayer =
+		        """
+		        SELECT playerID, firstName, lastName, emailAddress, lastActiveDateTime
+		        FROM Players 
+		        WHERE playerID = ?;
+		        """;
 
-     try (PreparedStatement selectStmt = cxn.prepareStatement(selectPlayer)) {
-    	  selectStmt.setInt(1, playerID);
+		    try (PreparedStatement selectStmt = cxn.prepareStatement(selectPlayer)) {
+		        selectStmt.setInt(1, playerID);
 
-     try (ResultSet results = selectStmt.executeQuery()) {
-        if (results.next()) {
-          return new Players(
-            results.getInt("playerID"),
-            results.getString("firstName"),
-            results.getString("lastName"),
-            results.getString("emailAddress")
-          );
-        } else {
-          return null;
-        }
-      }
-    }
-  }
+		        try (ResultSet results = selectStmt.executeQuery()) {
+		            if (results.next()) {
+		                return new Players(
+		                    results.getInt("playerID"),
+		                    results.getString("firstName"),
+		                    results.getString("lastName"),
+		                    results.getString("emailAddress"),
+		                    results.getTimestamp("lastActiveDateTime").toLocalDateTime()
+		                );
+		            } else {
+		                return null;
+		            }
+		        }
+		    }
+		}
   
   /**
    * Delete the Players record by fetching it from MySQL instance.
@@ -99,32 +102,44 @@ public class PlayersDao{
    * This runs a SELECT statement and returns a list of Players based on firstName.
    */
   public static List<Players> getPlayersFromFirstName(
-    Connection cxn,
-    String firstName
-  ) throws SQLException {
-    List<Players> players = new ArrayList<>();
-    String selectPlayers = """
-      SELECT playerID, firstName, lastName, emailAddress
-      FROM Players 
-      WHERE firstName = ?""";
+		    Connection cxn,
+		    String firstName
+		) throws SQLException {
+		    List<Players> players = new ArrayList<>();
+		    String selectPlayers = """
+		        SELECT playerID, firstName, lastName, emailAddress, lastActiveDateTime
+		        FROM Players 
+		        WHERE firstName = ?""";
 
-    try (PreparedStatement selectStmt = cxn.prepareStatement(selectPlayers)) {
-      selectStmt.setString(1, firstName);
-      try (ResultSet results = selectStmt.executeQuery()) {
-        while (results.next()) {
-          players.add(
-            new Players(
-              results.getInt("playerID"),
-              firstName,
-              results.getString("lastName"),
-              results.getString("emailAddress")
-            )
-          );
-        }
-        return players;
-      }
-    }
-  }
+		    try (PreparedStatement selectStmt = cxn.prepareStatement(selectPlayers)) {
+		        selectStmt.setString(1, firstName);
+		        try (ResultSet results = selectStmt.executeQuery()) {
+		            while (results.next()) {
+		                LocalDateTime lastActive = null;
+		                try {
+		                    Timestamp ts = results.getTimestamp("lastActiveDateTime");
+		                    if (ts != null) {
+		                        lastActive = ts.toLocalDateTime();
+		                    }
+		                } catch (SQLException e) {
+		                    // Column might not exist, use current time
+		                    lastActive = LocalDateTime.now();
+		                }
+		                
+		                players.add(
+		                    new Players(
+		                        results.getInt("playerID"),
+		                        firstName,
+		                        results.getString("lastName"),
+		                        results.getString("emailAddress"),
+		                        lastActive
+		                    )
+		                );
+		            }
+		            return players;
+		        }
+		    }
+		}
   
   /**
    * add in pm4
@@ -134,30 +149,41 @@ public class PlayersDao{
   public static List<Players> getPlayersFromLastName(
 		    Connection cxn,
 		    String lastName
-  ) throws SQLException {
-    List<Players> players = new ArrayList<>();
-    String selectPlayers = """
-      SELECT playerID, firstName, lastName, emailAddress
-      FROM Players 
-      WHERE lastName LIKE ?; """;
+		) throws SQLException {
+		    List<Players> players = new ArrayList<>();
+		    String selectPlayers = """
+		        SELECT playerID, firstName, lastName, emailAddress, lastActiveDateTime
+		        FROM Players 
+		        WHERE lastName LIKE ?; """;
 
-    try (PreparedStatement selectStmt = cxn.prepareStatement(selectPlayers)) {
-      selectStmt.setString(1, "%" + lastName + "%");
-      try (ResultSet results = selectStmt.executeQuery()) {
-        while (results.next()) {
-          players.add(
-            new Players(
-              results.getInt("playerID"),
-              results.getString("firstName"),
-              results.getString("lastName"),
-              results.getString("emailAddress")
-            )
-          );
-        }
-        return players;
-      }
-    }
-  }
+		    try (PreparedStatement selectStmt = cxn.prepareStatement(selectPlayers)) {
+		        selectStmt.setString(1, "%" + lastName + "%");
+		        try (ResultSet results = selectStmt.executeQuery()) {
+		            while (results.next()) {
+		                LocalDateTime lastActive = null;
+		                try {
+		                    Timestamp ts = results.getTimestamp("lastActiveDateTime");
+		                    if (ts != null) {
+		                        lastActive = ts.toLocalDateTime();
+		                    }
+		                } catch (SQLException e) {
+		                    lastActive = LocalDateTime.now();
+		                }
+		                
+		                players.add(
+		                    new Players(
+		                        results.getInt("playerID"),
+		                        results.getString("firstName"),
+		                        results.getString("lastName"),
+		                        results.getString("emailAddress"),
+		                        lastActive
+		                    )
+		                );
+		            }
+		            return players;
+		        }
+		    }
+		}
   
   
   /**
@@ -165,48 +191,50 @@ public class PlayersDao{
    * This runs a UPDATE statement.
    */
   public static Players updatePlayerEmailAddress(
-    Connection cxn,
-    Players player,
-    String newEmailAddress
-	  ) throws SQLException {
-    String updatePlayerEmailAddress = """
-      UPDATE Players
-      SET emailAddress = ?
-      WHERE playerID = ?;""";
+		    Connection cxn,
+		    Players player,
+		    String newEmailAddress
+		) throws SQLException {
+		    String updatePlayerEmailAddress = """
+		        UPDATE Players
+		        SET emailAddress = ?, lastActiveDateTime = NOW()
+		        WHERE playerID = ?;""";
 
-    try (PreparedStatement updateStmt = cxn.prepareStatement(updatePlayerEmailAddress)) {
-      updateStmt.setString(1, newEmailAddress);
-      updateStmt.setInt(2, player.getPlayerID());
-      updateStmt.executeUpdate();
-      
-      player.setEmailAddress(newEmailAddress);
-      return player;
-    }
-  }
+		    try (PreparedStatement updateStmt = cxn.prepareStatement(updatePlayerEmailAddress)) {
+		        updateStmt.setString(1, newEmailAddress);
+		        updateStmt.setInt(2, player.getPlayerID());
+		        updateStmt.executeUpdate();
+		        
+		        player.setEmailAddress(newEmailAddress);
+		        player.setLastActiveDateTime(LocalDateTime.now());
+		        return player;
+		    }
+		}
 
   /**
    * Update the firstName of the Player instance.
    * This runs a UPDATE statement.
    */
   public static Players updatePlayerFirstName(
-    Connection cxn,
-    Players player,
-    String newFirstName
-	  ) throws SQLException {
-    String updatePlayerFirstName = """
-      UPDATE Players
-      SET firstName = ?
-      WHERE playerID = ?;""";
+		    Connection cxn,
+		    Players player,
+		    String newFirstName
+		) throws SQLException {
+		    String updatePlayerFirstName = """
+		        UPDATE Players
+		        SET firstName = ?, lastActiveDateTime = NOW()
+		        WHERE playerID = ?;""";
 
-    try (PreparedStatement updateStmt = cxn.prepareStatement(updatePlayerFirstName)) {
-      updateStmt.setString(1, newFirstName);
-      updateStmt.setInt(2, player.getPlayerID());
-      updateStmt.executeUpdate();
-      
-      player.setFirstName(newFirstName);
-      return player;
-    }
-  }
+		    try (PreparedStatement updateStmt = cxn.prepareStatement(updatePlayerFirstName)) {
+		        updateStmt.setString(1, newFirstName);
+		        updateStmt.setInt(2, player.getPlayerID());
+		        updateStmt.executeUpdate();
+		        
+		        player.setFirstName(newFirstName);
+		        player.setLastActiveDateTime(LocalDateTime.now());
+		        return player;
+		    }
+		}
   
   /**
    * Update the lastName of the Player instance.
@@ -233,28 +261,54 @@ public class PlayersDao{
 //  }
   
   public static Players updatePlayerLastName(
-		  Connection cxn,
-		  Players player,
-		  String newLastName
+		    Connection cxn,
+		    Players player,
+		    String newLastName
 		) throws SQLException {
-		  System.out.println("Updating player ID " + player.getPlayerID() + 
-		                    " last name from '" + player.getLastName() + 
-		                    "' to '" + newLastName + "'");
-		  
-		  String updatePlayerLastName = """
-		    UPDATE Players
-		    SET lastName = ?
-		    WHERE playerID = ?;""";
-
-		  try (PreparedStatement updateStmt = cxn.prepareStatement(updatePlayerLastName)) {
-		    updateStmt.setString(1, newLastName);
-		    updateStmt.setInt(2, player.getPlayerID());
-		    int rowsAffected = updateStmt.executeUpdate();
-		    System.out.println("Rows affected by update: " + rowsAffected);
+		    System.out.println("Updating player ID " + player.getPlayerID() + 
+		                      " last name from '" + player.getLastName() + 
+		                      "' to '" + newLastName + "'");
 		    
-		    player.setLastName(newLastName);
-		    return player;
-		  }
+		    String updatePlayerLastName = """
+		        UPDATE Players
+		        SET lastName = ?, lastActiveDateTime = NOW()
+		        WHERE playerID = ?;""";
+
+		    try (PreparedStatement updateStmt = cxn.prepareStatement(updatePlayerLastName)) {
+		        updateStmt.setString(1, newLastName);
+		        updateStmt.setInt(2, player.getPlayerID());
+		        int rowsAffected = updateStmt.executeUpdate();
+		        System.out.println("Rows affected by update: " + rowsAffected);
+		        
+		        player.setLastName(newLastName);
+		        player.setLastActiveDateTime(LocalDateTime.now());
+		        return player;
+		    }
+		}
+  
+  /**
+   * to update last active time
+   * @param cxn
+   * @param player
+   * @return
+   * @throws SQLException
+   */
+  public static Players updateLastActiveDateTime(
+		    Connection cxn,
+		    Players player
+		) throws SQLException {
+		    String updateLastActive = """
+		        UPDATE Players
+		        SET lastActiveDateTime = NOW()
+		        WHERE playerID = ?;""";
+
+		    try (PreparedStatement updateStmt = cxn.prepareStatement(updateLastActive)) {
+		        updateStmt.setInt(1, player.getPlayerID());
+		        updateStmt.executeUpdate();
+		        
+		        player.setLastActiveDateTime(LocalDateTime.now());
+		        return player;
+		    }
 		}
   
 }

@@ -31,9 +31,9 @@ public class ETLController extends HttpServlet {
         
         // Check if ETL is currently running
         if (isETLRunning.get()) {
-            messages.put("info", "ETL process is currently running. Please wait...");
+            messages.put("info", "Dynamic ETL process is currently running. Please wait...");
         } else {
-            messages.put("success", "Ready to run ETL process. Click the button below to add new data to the database.");
+            messages.put("success", "Ready to run Dynamic ETL process to add more players and characters to the database.");
         }
         
         // Get current record counts for display
@@ -59,28 +59,28 @@ public class ETLController extends HttpServlet {
             // Check if ETL is already running
             if (isETLRunning.compareAndSet(false, true)) {
                 try {
-                    // Run ETL process asynchronously to avoid timeout
+                    // Run Dynamic ETL process asynchronously to avoid timeout
                     CompletableFuture.runAsync(() -> {
                         try {
                             WoWDataETL etl = new WoWDataETL();
                             etl.runETL();
-                            System.out.println("ETL process completed successfully from web interface");
+                            System.out.println("Dynamic ETL process completed successfully from web interface");
                         } catch (Exception e) {
-                            System.err.println("ETL process failed: " + e.getMessage());
+                            System.err.println("Dynamic ETL process failed: " + e.getMessage());
                             e.printStackTrace();
                         } finally {
                             isETLRunning.set(false);
                         }
                     });
                     
-                    messages.put("success", "ETL process started successfully! New data is being added to the database. This may take a few minutes...");
+                    messages.put("success", "Dynamic ETL process started successfully! New players and characters are being added to the database. This may take a few minutes...");
                     
                 } catch (Exception e) {
                     isETLRunning.set(false);
-                    messages.put("error", "Failed to start ETL process: " + e.getMessage());
+                    messages.put("error", "Failed to start Dynamic ETL process: " + e.getMessage());
                 }
             } else {
-                messages.put("warning", "ETL process is already running. Please wait for it to complete.");
+                messages.put("warning", "Dynamic ETL process is already running. Please wait for it to complete.");
             }
         }
         

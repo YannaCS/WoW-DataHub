@@ -43,35 +43,36 @@ public class ConsumablesDao {
 	 * retrieves a single record based on pk(itemID)
 	 * return an Consumables object or null if not found
 	 */
-	public static Consumables getConsumableByItemID(
-			Connection cxn,
-			int itemID
-	) throws SQLException {
-		String query_Consumable = """
-				SELECT *
-				FROM Consumables
-				JOIN Items
-				ON Consumables.itemID = Items.itemID
-				WHERE Consumables.itemID = ? ;
-				""";
-		try (PreparedStatement pstmt = cxn.prepareStatement(query_Consumable)) {
-			pstmt.setInt(1, itemID);
-			
-			try (ResultSet rs = pstmt.executeQuery()) {
-				if (rs.next()) {
-					return new Consumables(
-							itemID,
-							rs.getString("itemName"),
-							rs.getInt("level"),
-							rs.getInt("maxStackSize"),
-							rs.getBigDecimal("price"),
-							rs.getString("description")
-							);
-				} else {
-					return null;
-				}
-			}
-		}
+	public static Consumables getConsumableByItemID(Connection cxn, int itemID) throws SQLException {
+	    String query_Consumable = """
+	            SELECT I.itemID,
+	                   I.itemName,
+	                   I.level,
+	                   I.maxStackSize,
+	                   I.price,
+	                   C.description
+	            FROM Consumables C
+	            JOIN Items I ON C.itemID = I.itemID
+	            WHERE C.itemID = ? ;
+	            """;
+	    try (PreparedStatement pstmt = cxn.prepareStatement(query_Consumable)) {
+	        pstmt.setInt(1, itemID);
+	        
+	        try (ResultSet rs = pstmt.executeQuery()) {
+	            if (rs.next()) {
+	                return new Consumables(
+	                        rs.getInt("itemID"),
+	                        rs.getString("itemName"),
+	                        rs.getInt("level"),
+	                        rs.getInt("maxStackSize"),
+	                        rs.getBigDecimal("price"),
+	                        rs.getString("description")
+	                        );
+	            } else {
+	                return null;
+	            }
+	        }
+	    }
 	}
 
 	/**

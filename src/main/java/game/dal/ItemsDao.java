@@ -78,5 +78,67 @@ public class ItemsDao {
 		
 	}
 	
+	/**
+	 * Get item by ID with all basic information
+	 */
+	public static Items getItemByID(Connection cxn, int itemID) throws SQLException {
+	    String selectItem = """
+	            SELECT itemID, itemName, level, maxStackSize, price
+	            FROM Items 
+	            WHERE itemID = ?;
+	            """;
+	    
+	    try (PreparedStatement selectStmt = cxn.prepareStatement(selectItem)) {
+	        selectStmt.setInt(1, itemID);
+	        
+	        try (ResultSet result = selectStmt.executeQuery()) {
+	            if (result.next()) {
+	                return new Items(
+	                        result.getInt("itemID"),
+	                        result.getString("itemName"),
+	                        result.getInt("level"),
+	                        result.getInt("maxStackSize"),
+	                        result.getBigDecimal("price"));
+	            } else {
+	                return null;
+	            }
+	        }
+	    }
+	}
+
+	/**
+	 * Get item type (Weapon, Gear, or Consumable)
+	 */
+	public static String getItemType(Connection cxn, int itemID) throws SQLException {
+	    // Check if it's a weapon
+	    String checkWeapon = "SELECT 1 FROM Weapons WHERE itemID = ?";
+	    try (PreparedStatement ps = cxn.prepareStatement(checkWeapon)) {
+	        ps.setInt(1, itemID);
+	        try (ResultSet rs = ps.executeQuery()) {
+	            if (rs.next()) return "Weapon";
+	        }
+	    }
+	    
+	    // Check if it's a gear
+	    String checkGear = "SELECT 1 FROM Gears WHERE itemID = ?";
+	    try (PreparedStatement ps = cxn.prepareStatement(checkGear)) {
+	        ps.setInt(1, itemID);
+	        try (ResultSet rs = ps.executeQuery()) {
+	            if (rs.next()) return "Gear";
+	        }
+	    }
+	    
+	    // Check if it's a consumable
+	    String checkConsumable = "SELECT 1 FROM Consumables WHERE itemID = ?";
+	    try (PreparedStatement ps = cxn.prepareStatement(checkConsumable)) {
+	        ps.setInt(1, itemID);
+	        try (ResultSet rs = ps.executeQuery()) {
+	            if (rs.next()) return "Consumable";
+	        }
+	    }
+	    
+	    return "Unknown";
+	}
+	
 
 }

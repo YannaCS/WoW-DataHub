@@ -10,7 +10,7 @@
 
     <!-- Welcome file list -->
     <welcome-file-list>
-        <welcome-file>FindCharacter.jsp</welcome-file>
+        <welcome-file>Home.jsp</welcome-file>
     </welcome-file-list>
 
 </web-app>

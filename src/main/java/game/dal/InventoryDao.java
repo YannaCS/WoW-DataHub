@@ -163,5 +163,46 @@ public class InventoryDao {
 		
 	}
 	
+	public static List<InventoryItemDetail> getInventoryWithItemDetails(Connection cxn, Characters character) throws SQLException {
+	    String query = """
+	            SELECT inv.slotID, inv.instance as itemID, inv.quantity,
+	                   i.itemName, i.level,
+	                   CASE 
+	                       WHEN w.itemID IS NOT NULL THEN 'Weapon'
+	                       WHEN g.itemID IS NOT NULL THEN 'Gear' 
+	                       WHEN c.itemID IS NOT NULL THEN 'Consumable'
+	                       ELSE 'Unknown'
+	                   END as itemType
+	            FROM Inventory inv
+	            JOIN Items i ON inv.instance = i.itemID
+	            LEFT JOIN Weapons w ON i.itemID = w.itemID
+	            LEFT JOIN Gears g ON i.itemID = g.itemID  
+	            LEFT JOIN Consumables c ON i.itemID = c.itemID
+	            WHERE inv.charID = ?
+	            ORDER BY inv.slotID;
+	            """;
+
+	    List<InventoryItemDetail> inventoryDetails = new ArrayList<>();
+
+	    try (PreparedStatement ps = cxn.prepareStatement(query)) {
+	        ps.setInt(1, character.getCharID());
+
+	        try (ResultSet rs = ps.executeQuery()) {
+	            while (rs.next()) {
+	                InventoryItemDetail detail = new InventoryItemDetail(
+	                    rs.getInt("slotID"),
+	                    rs.getInt("itemID"),
+	                    rs.getString("itemName"),
+	                    rs.getString("itemType"),
+	                    rs.getInt("quantity"),
+	                    rs.getInt("level")
+	                );
+	                inventoryDetails.add(detail);
+	            }
+	        }
+	    }
+	    return inventoryDetails;
+	}
+	
 
 }

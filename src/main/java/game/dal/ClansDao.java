@@ -179,5 +179,29 @@ public class ClansDao {
 		}
 		return clans;
 	}
+	
+	/**
+	 * Get all clans from the database
+	 */
+	public static List<Clans> getAllClans(Connection cxn) throws SQLException {
+		String query_AllClans = """
+				SELECT *
+				FROM Clans
+				ORDER BY clanName;
+				""";
+		
+		List<Clans> clans = new ArrayList<>();
+		
+		try (PreparedStatement pstmt = cxn.prepareStatement(query_AllClans)) {
+			try (ResultSet rs = pstmt.executeQuery()) {
+	            while (rs.next()) {
+	                String clanName = rs.getString("clanName");
+	                Clans.Races clanRace = Clans.Races.valueOf(rs.getString("race").toUpperCase());
+	                clans.add(new Clans(clanName, clanRace));
+	            }
+	        }
+		}
+		return clans;
+	}
 
 }

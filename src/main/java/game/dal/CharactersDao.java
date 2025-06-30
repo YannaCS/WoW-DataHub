@@ -8,6 +8,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 import game.model.*;
 
@@ -54,35 +56,57 @@ public class CharactersDao{
    * This runs a SELECT statement and returns a single Characters instance based on charID.
    */
   public static Characters getCharacterByCharID(
-	Connection cxn,
-    int charID
-  )  throws SQLException {
-     final String selectCharacter =
-       """
-       SELECT charID, playerID, firstName, lastName, clan, weaponWeared
-       FROM Characters 
-       WHERE charID = ?;
-       """;
+		    Connection cxn,
+		    int charID
+		) throws SQLException {
+		    final String selectCharacter =
+		        """
+		        SELECT c.charID, c.playerID, c.firstName, c.lastName, c.clan, c.weaponWeared,
+		               p.firstName as pFirstName, p.lastName as pLastName, p.emailAddress, p.lastActiveDateTime
+		        FROM Characters c
+		        JOIN Players p ON c.playerID = p.playerID
+		        WHERE c.charID = ?;
+		        """;
 
-     try (PreparedStatement selectStmt = cxn.prepareStatement(selectCharacter)) {
-    	  selectStmt.setInt(1, charID);
+		    try (PreparedStatement selectStmt = cxn.prepareStatement(selectCharacter)) {
+		        selectStmt.setInt(1, charID);
 
-     try (ResultSet results = selectStmt.executeQuery()) {
-        if (results.next()) {
-          return new Characters(
-            results.getInt("charID"),
-            PlayersDao.getPlayerByPlayerID(cxn, results.getInt("playerID")),
-            results.getString("firstName"),
-            results.getString("lastName"),
-            ClansDao.getClanRacebyClanName(cxn, results.getString("clan")),
-            WeaponsDao.getWeaponByItemID(cxn, results.getInt("weaponWeared"))
-          );
-        } else {
-          return null;
-        }
-      }
-    }
-  }
+		        try (ResultSet results = selectStmt.executeQuery()) {
+		            if (results.next()) {
+		                // Handle lastActiveDateTime safely
+		                LocalDateTime lastActive = null;
+		                try {
+		                    Timestamp ts = results.getTimestamp("lastActiveDateTime");
+		                    if (ts != null) {
+		                        lastActive = ts.toLocalDateTime();
+		                    }
+		                } catch (SQLException e) {
+		                    lastActive = LocalDateTime.now();
+		                }
+		                
+		                // Create player with lastActiveDateTime
+		                Players player = new Players(
+		                    results.getInt("playerID"),
+		                    results.getString("pFirstName"),
+		                    results.getString("pLastName"),
+		                    results.getString("emailAddress"),
+		                    lastActive
+		                );
+		                
+		                return new Characters(
+		                    results.getInt("charID"),
+		                    player,
+		                    results.getString("firstName"),
+		                    results.getString("lastName"),
+		                    ClansDao.getClanRacebyClanName(cxn, results.getString("clan")),
+		                    WeaponsDao.getWeaponByItemID(cxn, results.getInt("weaponWeared"))
+		                );
+		            } else {
+		                return null;
+		            }
+		        }
+		    }
+		}
   
   /**
    * add in pm4

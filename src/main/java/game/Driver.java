@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import game.dal.ConnectionManager;
-import game.etl.WoWDataETL;
+import game.etl.DefaultDataETL;
 
 public class Driver {
 	
@@ -12,11 +12,15 @@ public class Driver {
 		try {
 			resetSchema();
 			
-			// Run simple ETL process to load WoW-themed data (no Jackson required)
-			WoWDataETL etl = new WoWDataETL();
-			etl.runETL();
+			// Run Default Data ETL to load static game data
+			System.out.println("🎯 Loading default game data...");
+			DefaultDataETL defaultETL = new DefaultDataETL();
+			try (Connection cxn = ConnectionManager.getConnection()) {
+				defaultETL.runDefaultDataETL(cxn);
+			}
 			
-			System.out.println("WoW Data ETL completed successfully!");
+			System.out.println("🎉 Default WoW Data ETL completed successfully!");
+			System.out.println("💡 Use the web interface to run Dynamic ETL for players and characters.");
 			
 		} catch (SQLException e) {
 			System.out.print("SQL Exception: ");
@@ -36,16 +40,17 @@ public class Driver {
 	    
 	    try (Connection cxn = ConnectionManager.getConnection()) {
 	        // 1. Create Players table
-	        cxn.createStatement().executeUpdate("""
-	            CREATE TABLE `Players` (
-	                `playerID` INTEGER AUTO_INCREMENT,
-	                `firstName` VARCHAR(255) NOT NULL,
-	                `lastName` VARCHAR(255) NOT NULL,
-	                `emailAddress` VARCHAR(255) NOT NULL,
-	                CONSTRAINT pk_players PRIMARY KEY (playerID),
-	                CONSTRAINT uk_players_email UNIQUE (emailAddress)
-	            );
-	        """);
+	    	cxn.createStatement().executeUpdate("""
+	    		    CREATE TABLE `Players` (
+	    		        `playerID` INTEGER AUTO_INCREMENT,
+	    		        `firstName` VARCHAR(255) NOT NULL,
+	    		        `lastName` VARCHAR(255) NOT NULL,
+	    		        `emailAddress` VARCHAR(255) NOT NULL,
+	    		        `lastActiveDateTime` DATETIME DEFAULT CURRENT_TIMESTAMP,
+	    		        CONSTRAINT pk_players PRIMARY KEY (playerID),
+	    		        CONSTRAINT uk_players_email UNIQUE (emailAddress)
+	    		    );
+	    		""");
 	        
 	        // 2. Create Clans table
 	        cxn.createStatement().executeUpdate("""
@@ -335,11 +340,185 @@ public class Driver {
 	        """);
 	    }
 	    
-	    // Create business rule triggers
+	    // Create business rule triggers and views
 	    try (Connection cxn = ConnectionManager.getConnection()) {
 	        game.sql.BusinessRuleTriggers.createAllTriggers(cxn);
+	        createDatabaseViews(cxn);
 	    }
 	    
+	    
 	    System.out.println("Database schema 'WoWDataHub' created successfully with business rule constraints!");
+	}
+	public static void createDatabaseViews(Connection cxn) throws SQLException {
+	    System.out.println("📋 Creating database views for analytics...");
+	    
+	    // Drop existing views if they exist (case-insensitive cleanup)
+	    String[] viewNames = {
+	        "DailyActivePlayersView", "JobDistributionView", "ClanDistributionView",
+	        "CurrencyStatsView", "ItemTypeDistributionView", "TopPlayersByLevelView", 
+	        "TopPlayersByWealthView", "OverallStatsView", "CharacterInventoryDetailsView"
+	    };
+	    
+	    for (String viewName : viewNames) {
+	        try {
+	            cxn.createStatement().executeUpdate("DROP VIEW IF EXISTS " + viewName);
+	        } catch (SQLException e) {
+	            // Ignore if view doesn't exist
+	        }
+	    }
+	    
+	    try {
+	        // 1. Overall Statistics View (Create this first as it's needed immediately)
+	        cxn.createStatement().executeUpdate("""
+	            CREATE VIEW OverallStatsView AS
+	            SELECT 
+	                (SELECT COUNT(*) FROM Players) as total_players,
+	                (SELECT COUNT(*) FROM Characters) as total_characters,
+	                (SELECT COUNT(*) FROM Weapons) as total_weapons,
+	                (SELECT COUNT(*) FROM Gears) as total_gears,
+	                (SELECT COUNT(*) FROM Consumables) as total_consumables,
+	                (SELECT COUNT(*) FROM Clans) as total_clans;
+	        """);
+	        System.out.println("✅ Created OverallStatsView");
+	        
+	        // 2. Daily Active Players View
+	        cxn.createStatement().executeUpdate("""
+	            CREATE VIEW DailyActivePlayersView AS
+	            SELECT 
+	                DATE(lastActiveDateTime) as activity_date,
+	                COUNT(*) as active_count
+	            FROM Players 
+	            WHERE lastActiveDateTime >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+	            GROUP BY DATE(lastActiveDateTime)
+	            ORDER BY activity_date;
+	        """);
+	        System.out.println("✅ Created DailyActivePlayersView");
+	        
+	        // 3. Job Distribution View
+	        cxn.createStatement().executeUpdate("""
+	            CREATE VIEW JobDistributionView AS
+	            SELECT 
+	                w.wearableJob as job_name,
+	                COUNT(*) as character_count,
+	                ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM Characters), 2) as percentage
+	            FROM Characters c
+	            JOIN Weapons w ON c.weaponWeared = w.itemID
+	            GROUP BY w.wearableJob
+	            ORDER BY character_count DESC;
+	        """);
+	        System.out.println("✅ Created JobDistributionView");
+	        
+	        // 4. Clan Distribution View  
+	        cxn.createStatement().executeUpdate("""
+	            CREATE VIEW ClanDistributionView AS
+	            SELECT 
+	                cl.clanName as clan_name,
+	                cl.race,
+	                COUNT(c.charID) as character_count,
+	                ROUND(COUNT(c.charID) * 100.0 / (SELECT COUNT(*) FROM Characters), 2) as percentage
+	            FROM Clans cl
+	            LEFT JOIN Characters c ON cl.clanName = c.clan
+	            GROUP BY cl.clanName, cl.race
+	            HAVING character_count > 0
+	            ORDER BY character_count DESC;
+	        """);
+	        System.out.println("✅ Created ClanDistributionView");
+	        
+	        // 5. Currency Statistics View
+	        cxn.createStatement().executeUpdate("""
+	            CREATE VIEW CurrencyStatsView AS
+	            SELECT 
+	                curr.currencyName as currency_name,
+	                curr.cap,
+	                curr.weeklyCap as weekly_cap,
+	                COUNT(cw.charID) as players_with_currency,
+	                COALESCE(AVG(cw.amount), 0) as avg_amount,
+	                COALESCE(MAX(cw.amount), 0) as max_amount,
+	                COALESCE(SUM(cw.amount), 0) as total_in_circulation
+	            FROM Currencies curr
+	            LEFT JOIN CharacterWealth cw ON curr.currencyName = cw.currencyName
+	            GROUP BY curr.currencyName, curr.cap, curr.weeklyCap
+	            ORDER BY total_in_circulation DESC;
+	        """);
+	        System.out.println("✅ Created CurrencyStatsView");
+	        
+	        // 6. Item Type Distribution View
+	        cxn.createStatement().executeUpdate("""
+	            CREATE VIEW ItemTypeDistributionView AS
+	            SELECT 'Weapons' as item_type, COUNT(*) as count FROM Weapons
+	            UNION ALL
+	            SELECT 'Gears' as item_type, COUNT(*) as count FROM Gears  
+	            UNION ALL
+	            SELECT 'Consumables' as item_type, COUNT(*) as count FROM Consumables;
+	        """);
+	        System.out.println("✅ Created ItemTypeDistributionView");
+	        
+	        // 7. Top Players by Level View
+	        cxn.createStatement().executeUpdate("""
+	            CREATE VIEW TopPlayersByLevelView AS
+	            SELECT 
+	                CONCAT(c.firstName, ' ', c.lastName) as character_name,
+	                CONCAT(p.firstName, ' ', p.lastName) as player_name,
+	                MAX(COALESCE(cuj.jobLevel, 1)) as max_level,
+	                w.wearableJob as current_job,
+	                cl.race
+	            FROM Characters c
+	            JOIN Players p ON c.playerID = p.playerID
+	            JOIN Clans cl ON c.clan = cl.clanName
+	            JOIN Weapons w ON c.weaponWeared = w.itemID
+	            LEFT JOIN CharacterUnlockedJob cuj ON c.charID = cuj.charID
+	            GROUP BY c.charID, c.firstName, c.lastName, p.firstName, p.lastName, w.wearableJob, cl.race
+	            ORDER BY max_level DESC, c.firstName
+	            LIMIT 10;
+	        """);
+	        System.out.println("✅ Created TopPlayersByLevelView");
+	        
+	        // 8. Top Players by Wealth View
+	        cxn.createStatement().executeUpdate("""
+	            CREATE VIEW TopPlayersByWealthView AS
+	            SELECT 
+	                CONCAT(c.firstName, ' ', c.lastName) as character_name,
+	                SUM(cw.amount) as total_wealth,
+	                COUNT(DISTINCT cw.currencyName) as currency_types
+	            FROM Characters c
+	            LEFT JOIN CharacterWealth cw ON c.charID = cw.charID
+	            GROUP BY c.charID, c.firstName, c.lastName
+	            HAVING total_wealth IS NOT NULL
+	            ORDER BY total_wealth DESC
+	            LIMIT 10;
+	        """);
+	        System.out.println("✅ Created TopPlayersByWealthView");
+	        
+	        // 9. Character Inventory Details View
+	        cxn.createStatement().executeUpdate("""
+	            CREATE VIEW CharacterInventoryDetailsView AS
+	            SELECT 
+	                inv.charID,
+	                inv.slotID,
+	                inv.instance as itemID,
+	                inv.quantity,
+	                i.itemName,
+	                i.level,
+	                CASE 
+	                    WHEN w.itemID IS NOT NULL THEN 'Weapon'
+	                    WHEN g.itemID IS NOT NULL THEN 'Gear' 
+	                    WHEN co.itemID IS NOT NULL THEN 'Consumable'
+	                    ELSE 'Unknown'
+	                END as item_type
+	            FROM Inventory inv
+	            JOIN Items i ON inv.instance = i.itemID
+	            LEFT JOIN Weapons w ON i.itemID = w.itemID
+	            LEFT JOIN Gears g ON i.itemID = g.itemID  
+	            LEFT JOIN Consumables co ON i.itemID = co.itemID;
+	        """);
+	        System.out.println("✅ Created CharacterInventoryDetailsView");
+	        
+	    } catch (SQLException e) {
+	        System.err.println("❌ Error creating views: " + e.getMessage());
+	        e.printStackTrace();
+	        throw e;
+	    }
+	    
+	    System.out.println("✅ All database views created successfully!");
 	}
 }

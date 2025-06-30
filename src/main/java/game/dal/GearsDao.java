@@ -40,36 +40,35 @@ public class GearsDao {
 	}
 	
 	public static Gears getGearByItemID(Connection cxn, int itemID) throws SQLException {
-		String selectGear = """
-				SELECT itemName,
-					   level,
-					   maxStackSize,
-					   price,
-					   requiredLevel
-				FROM Gears G
-				JOIN Equipments E
-				ON G.ItemID = E.ItemID
-				JOIN Items I
-				ON E.itemID = I.itemID
-				WHERE G.itemID = ?;
-				""";
-		
-		try (PreparedStatement selectStmt = cxn.prepareStatement(selectGear)) {
-			selectStmt.setInt(1, itemID);
-			
-			try (ResultSet result = selectStmt.executeQuery()) {
-				if (result.next()) {
-					return new Gears(
-							itemID,
-							result.getString("itemName"),
-							result.getInt("level"),
-							result.getInt("maxStackSize"),
-							result.getBigDecimal("price"),
-							result.getInt("requiredLevel"));
-				} else {
-					return null;
-				}
-			}
-		}
+	    String selectGear = """
+	            SELECT I.itemID,
+	                   I.itemName,
+	                   I.level,
+	                   I.maxStackSize,
+	                   I.price,
+	                   E.requiredLevel
+	            FROM Gears G
+	            JOIN Equipments E ON G.itemID = E.itemID
+	            JOIN Items I ON E.itemID = I.itemID
+	            WHERE G.itemID = ?;
+	            """;
+	    
+	    try (PreparedStatement selectStmt = cxn.prepareStatement(selectGear)) {
+	        selectStmt.setInt(1, itemID);
+	        
+	        try (ResultSet result = selectStmt.executeQuery()) {
+	            if (result.next()) {
+	                return new Gears(
+	                        result.getInt("itemID"),
+	                        result.getString("itemName"),
+	                        result.getInt("level"),
+	                        result.getInt("maxStackSize"),
+	                        result.getBigDecimal("price"),
+	                        result.getInt("requiredLevel"));
+	            } else {
+	                return null;
+	            }
+	        }
+	    }
 	}
 }

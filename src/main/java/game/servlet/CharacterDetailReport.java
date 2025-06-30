@@ -44,8 +44,8 @@ public class CharacterDetailReport extends HttpServlet {
                         req.setAttribute("character", character);
                         
                         // Get character's inventory
-                        List<Inventory> inventory = InventoryDao.getInventoryOnlyByCharacters(connection, character);
-                        req.setAttribute("inventory", inventory);
+                        List<InventoryItemDetail> inventoryDetails = ViewsDao.getCharacterInventoryDetails(connection, charID);
+                        req.setAttribute("inventoryDetails", inventoryDetails);
                         
                         // Get character's equipped items
                         List<EquippedItems> equippedItems = EquippedItemsDao.getEquippedItemsOnlyByCharacters(connection, character);
