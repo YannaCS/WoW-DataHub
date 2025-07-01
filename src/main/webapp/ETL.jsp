@@ -67,7 +67,7 @@
                                 <h6 class="text-warning">
                                     <i class="bi bi-info-circle"></i> ETL Process Information
                                 </h6>
-                                <ul class="text-muted small">
+                                <p class="small" style="color: #B8C5D6;">
                                     <li>Adds 50 new players from real WoW realm data</li>
                                     <li>Creates 100+ new characters with business rule validation</li>
                                     <li>Populates character relationships (jobs, wealth, inventory)</li>
@@ -125,7 +125,7 @@
                                 <h6 class="text-info">
                                     <i class="bi bi-lightbulb"></i> ETL Best Practices
                                 </h6>
-                                <ul class="text-muted small">
+                                <p class="small" style="color: #B8C5D6;">
                                     <li>Run ETL during low-traffic periods</li>
                                     <li>Monitor database size and performance</li>
                                     <li>Backup database before major ETL operations</li>
@@ -148,7 +148,7 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <h6 class="text-warning">Default Data ETL</h6>
-                                    <p class="small text-muted">
+                                    <p class="small" style="color: #B8C5D6;">
                                         Loads static game data including races, clans, statistics, currencies, 
                                         weapons, gear, and consumables. This runs once during database initialization.
                                     </p>
@@ -158,7 +158,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <h6 class="text-warning">Dynamic Data ETL</h6>
-                                    <p class="small text-muted">
+                                    <p class="small" style="color: #B8C5D6;">
                                         Adds players, characters, and their relationships. Can be run multiple times 
                                         to add more data to the system.
                                     </p>
@@ -168,7 +168,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <h6 class="text-warning">Business Rules</h6>
-                                    <p class="small text-muted">
+                                    <p class="small" style="color: #B8C5D6;">
                                         All data insertion follows WoW business rules including currency caps, 
                                         job requirements, and equipment validation.
                                     </p>

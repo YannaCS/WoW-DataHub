@@ -75,11 +75,11 @@
                                 </form>
                                 
                                 <div class="mt-4 text-center">
-                                    <small class="text-muted">
+                                    <p class="small" style="color: #B8C5D6;">
                                         <i class="bi bi-lightbulb"></i> Tip: Use the 
                                         <a href="findcharacter" class="text-decoration-none" style="color: var(--wow-gold);">Find Characters</a> 
                                         page to discover character IDs.
-                                    </small>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -163,7 +163,7 @@
                                                                     </span>
                                                                 </c:when>
                                                                 <c:otherwise>
-                                                                    <span class="text-muted">Unlocked</span>
+                                                                    <span class="text">Unlocked</span>
                                                                 </c:otherwise>
                                                             </c:choose>
                                                         </td>
@@ -173,7 +173,7 @@
                                                                     <fmt:formatNumber value="${job.xP}" type="number" groupingUsed="true"/> XP
                                                                 </c:when>
                                                                 <c:otherwise>
-                                                                    <span class="text-muted">0 XP</span>
+                                                                    <span class="text">0 XP</span>
                                                                 </c:otherwise>
                                                             </c:choose>
                                                         </td>
@@ -182,12 +182,12 @@
                                             </tbody>
                                         </table>
                                     </div>
-                                    <small class="text-muted">
+                                    <p class="small" style="color: #B8C5D6;">
                                         <i class="bi bi-star-fill text-warning"></i> Currently active job
-                                    </small>
+                                    </p>
                                 </c:if>
                                 <c:if test="${empty unlockedJobs}">
-                                    <p class="text-muted text-center">No jobs unlocked yet.</p>
+                                    <p class="text text-center">No jobs unlocked yet.</p>
                                 </c:if>
                             </div>
                         </div>
@@ -208,7 +208,7 @@
                                                 <div>
                                                     <strong style="color: var(--wow-gold);">${currency.currency.currencyName}</strong>
                                                     <c:if test="${currency.weeklyAcquired != null}">
-                                                        <br><small class="text-muted">Weekly: <fmt:formatNumber value="${currency.weeklyAcquired}" type="number" groupingUsed="true"/></small>
+                                                        <br><p class="small" style="color: #B8C5D6;">Weekly: <fmt:formatNumber value="${currency.weeklyAcquired}" type="number" groupingUsed="true"/></p>
                                                     </c:if>
                                                 </div>
                                                 <div class="text-end">
@@ -216,7 +216,7 @@
                                                         <fmt:formatNumber value="${currency.amount}" type="number" groupingUsed="true"/>
                                                     </strong>
                                                     <c:if test="${currency.currency.cap != null}">
-                                                        <br><small class="text-muted">Cap: <fmt:formatNumber value="${currency.currency.cap}" type="number" groupingUsed="true"/></small>
+                                                        <br><p class="small" style="color: #B8C5D6;">Cap: <fmt:formatNumber value="${currency.currency.cap}" type="number" groupingUsed="true"/></p>
                                                     </c:if>
                                                 </div>
                                             </div>
@@ -224,7 +224,7 @@
                                     </div>
                                 </c:if>
                                 <c:if test="${empty wealth}">
-                                    <p class="text-muted text-center">No currency records found.</p>
+                                    <p class="text text-center">No currency records found.</p>
                                 </c:if>
                             </div>
                         </div>
@@ -263,7 +263,7 @@
 				                                </span>
 				                            </td>
 				                            <td>
-				                                <span class="text-muted">Lv.${item.level}</span>
+				                                <span class="text">Lv.${item.level}</span>
 				                            </td>
 				                            <td>
 				                                <span style="color: var(--wow-silver);">${item.quantity}</span>
@@ -276,7 +276,7 @@
 				    </div>
 				</c:if>
 				<c:if test="${empty inventoryDetails}">
-				    <p class="text-muted text-center">Inventory is empty.</p>
+				    <p class="text text-center">Inventory is empty.</p>
 				</c:if>
 
                     <!-- Equipped Items -->
@@ -298,11 +298,11 @@
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <strong style="color: var(--wow-gold);">MAIN_HAND</strong>
-                                            <br><small class="text-muted">Current Weapon</small>
+                                            <br><small class="text">Current Weapon</small>
                                         </div>
                                         <div class="text-end">
                                             <strong>${character.weaponWeared.itemName}</strong>
-                                            <br><small class="text-muted">${character.weaponWeared.damage} DMG • Lv.${character.weaponWeared.level}</small>
+                                            <br><small class="text">${character.weaponWeared.damage} DMG • Lv.${character.weaponWeared.level}</small>
                                         </div>
                                     </div>
                                 </div>
@@ -323,7 +323,7 @@
                                 </c:if>
                                 
                                 <c:if test="${empty equippedItems}">
-                                    <p class="text-muted text-center">Only weapon is equipped.</p>
+                                    <p class="text text-center">Only weapon is equipped.</p>
                                 </c:if>
                             </div>
                         </div>

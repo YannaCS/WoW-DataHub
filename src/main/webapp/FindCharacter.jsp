@@ -253,7 +253,7 @@
                                name="playerlastname" 
                                placeholder="Enter player's last name (partial match supported)"
                                value="${param.playerlastname}">
-                        <small class="text-muted">Search supports partial matches (e.g., "Storm" will find "Stormwind")</small>
+                        <p class="small" style="color: #B8C5D6;">Search supports partial matches (e.g., "Storm" will find "Stormwind")</p>
                     </div>
                     
                     <div class="col-md-6">
@@ -328,7 +328,7 @@
                                     <td>
                                         <strong>${character.firstName} ${character.lastName}</strong>
                                         <br>
-                                        <small class="text-muted">ID: ${character.charID}</small>
+                                        <p class="small" style="color: #B8C5D6;">ID: ${character.charID}</p>>
                                     </td>
                                     <td>
                                         ${character.players.firstName} ${character.players.lastName}
@@ -360,7 +360,7 @@
                                     <td>
                                         ${character.weaponWeared.itemName}
                                         <br>
-                                        <small class="text-muted">Damage: ${character.weaponWeared.damage}</small>
+                                        <p class="small" style="color: #B8C5D6;">Damage: ${character.weaponWeared.damage}</p>
                                     </td>
                                     <td>
                                         <a href="characterdetailreport?charid=${character.charID}" class="btn btn-action btn-sm">
