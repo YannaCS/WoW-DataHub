@@ -11,7 +11,7 @@ A comprehensive database management system for World of Warcraft-inspired game d
 - [Project Structure](https://github.com/YannaCS/WoW-DataHub/blob/main/README.md#-project-structure)
 - [Setup Instructions](https://github.com/YannaCS/WoW-DataHub/blob/main/README.md#-setup-instructions)
 - [Usage Guide](https://github.com/YannaCS/WoW-DataHub/blob/main/README.md#-usage-guide)
-- [Business Rules](#business-rules)
+- [Business Rules](https://github.com/YannaCS/WoW-DataHub/blob/main/README.md#-business-rules)
 - [ETL Process](#etl-process)
 - [API Integration](#api-integration)
 
