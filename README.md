@@ -94,7 +94,7 @@ The database consists of 18 tables organized into several domains:
 - `Currencies` - Game currencies with caps
 - `JobsForGear` - Equipment job restrictions
 
-[ERD](https://github.com/YannaCS/WoW-DataHub/blob/59a0cbf2229d5665fee90b096e116d56a8107f67/img/ERD.jpg)
+[ERD](https://github.com/YannaCS/WoW-DataHub/blob/ea631aedf792ee2096e4ea6c207319b77664d9af/assets/ERD.jpg)
 
 ## 📁 Project Structure
 
