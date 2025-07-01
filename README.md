@@ -182,7 +182,7 @@ cd WoW-DataHub
 - Monitor daily active players
 - See job and clan distributions
 - Track top players by level and wealth
-<img width="1305" alt="image" src="https://github.com/user-attachments/assets/f209f16d-4e5e-4afb-ba58-5784d9343b8e" />
+<img width="1509" alt="image" src="https://github.com/user-attachments/assets/a8a4c626-ce7f-4bb1-8be2-d83e08208bf3" />
 <img width="957" alt="image" src="https://github.com/user-attachments/assets/f38c06ef-d9c9-432d-992b-5ec94ce58682" />
 <img width="1433" alt="image" src="https://github.com/user-attachments/assets/bf5d6087-c35d-45d8-8b3d-dd148ed52a64" />
 
