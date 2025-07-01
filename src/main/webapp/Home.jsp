@@ -524,7 +524,7 @@
 		                <div class="col-md-6">
 		                    <div class="chart-container">
 		                        <h3 class="chart-title"><i class="bi bi-box"></i> Item Type Distribution</h3>
-		                        <canvas id="itemTypeChart" width="200" height="200"></canvas>
+		                        <canvas id="itemTypeChart" width="100" height="100"></canvas>
 		                    </div>
 		                </div>
 		            </div>
@@ -785,7 +785,7 @@
 	                    legend: {
 	                        position: 'bottom',
 	                        labels: {
-	                            padding: 20,
+	                            padding: 15,
 	                            usePointStyle: true,
 	                            color: '#c0c0c0'
 	                        }
