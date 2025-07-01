@@ -20,8 +20,6 @@ A comprehensive database management system for World of Warcraft-inspired game d
 
 WoW DataHub is a full-stack web application that manages player and character data for a multiplayer online role-playing game (MMORPG). The system supports complex relationships between players, characters, items, currencies, and game statistics while enforcing strict business rules through database constraints and triggers.  
 
-[ERD](https://github.com/YannaCS/WoW-DataHub/blob/59a0cbf2229d5665fee90b096e116d56a8107f67/img/ERD.jpg)
-
 ### Key Highlights
 - **Interconnected database tables** with full referential integrity
 - **Business rule enforcement** through SQL triggers and Java validation
@@ -95,6 +93,8 @@ The database consists of 18 tables organized into several domains:
 - `Statistics` - Available character attributes
 - `Currencies` - Game currencies with caps
 - `JobsForGear` - Equipment job restrictions
+
+[ERD](https://github.com/YannaCS/WoW-DataHub/blob/59a0cbf2229d5665fee90b096e116d56a8107f67/img/ERD.jpg)
 
 ## 📁 Project Structure
 
@@ -183,16 +183,26 @@ cd WoW-DataHub
 - Monitor daily active players
 - See job and clan distributions
 - Track top players by level and wealth
+<img width="1305" alt="image" src="https://github.com/user-attachments/assets/f209f16d-4e5e-4afb-ba58-5784d9343b8e" />
+<img width="957" alt="image" src="https://github.com/user-attachments/assets/f38c06ef-d9c9-432d-992b-5ec94ce58682" />
+<img width="1433" alt="image" src="https://github.com/user-attachments/assets/bf5d6087-c35d-45d8-8b3d-dd148ed52a64" />
+
 
 ### Character Management
 1. **Find Characters**: Search by player last name
 2. **Character Details**: View complete character information
 3. **Update Weapon**: Change character's equipped weapon
+<img width="1280" alt="image" src="https://github.com/user-attachments/assets/b3e971c8-7287-4d1e-9628-c1b0d89f328e" />
+<img width="1461" alt="image" src="https://github.com/user-attachments/assets/8cd2f64c-5cc0-42c8-bac1-0dd40fc1ce9c" />
+<img width="1449" alt="image" src="https://github.com/user-attachments/assets/a4f043b4-525b-4cae-87b2-9eb678d9ca8c" />
+<img width="1458" alt="image" src="https://github.com/user-attachments/assets/4070263c-5bf2-4960-95e5-cb3c3298eeef" />
+
 
 ### ETL Process
 1. Navigate to ETL page
 2. Click "Run Dynamic ETL" to add more players and characters
 3. Monitor record counts as data is added
+<img width="1150" alt="image" src="https://github.com/user-attachments/assets/bc258907-4f16-42ec-8f5e-e0a7eb994efe" />
 
 ### Optional: WoW API Integration
 To enable real Blizzard API data:
@@ -252,26 +262,3 @@ The system includes optional integration with Blizzard's WoW API:
 - Fetches real realm data
 - Retrieves actual item information
 - Falls back to generated data if unavailable
-
-## 📸 Screenshots
-
-### Home Dashboard
-The main dashboard displays comprehensive analytics including:
-- Overall statistics (players, characters, items)
-- Daily active player trends
-- Job and clan distribution charts
-- Top players leaderboards
-
-### Character Search
-Search functionality with sorting options:
-- Filter by player last name
-- Sort by multiple attributes
-- View all characters or filtered results
-
-### Character Details
-Comprehensive character information:
-- Basic info (player, clan, weapon)
-- Inventory with item types and quantities
-- Equipped items by slot
-- Currency holdings
-- Unlocked jobs with levels
