@@ -14,7 +14,6 @@ A comprehensive database management system for World of Warcraft-inspired game d
 - [Business Rules](#business-rules)
 - [ETL Process](#etl-process)
 - [API Integration](#api-integration)
-- [Screenshots](#screenshots)
 
 ## 🎯 Project Overview
 
@@ -236,7 +235,7 @@ The system enforces several critical business rules:
 - XP requires an associated job level
 - Characters must have at least one unlocked job
 
-[Business Rules]()
+[All Business Rules](https://github.com/YannaCS/WoW-DataHub/blob/deaf7341603ddaf7b894f690b0b5fd039ff128eb/assets/business%20rules.pdf)
 
 ## 🔄 ETL Process
 
