@@ -26,17 +26,17 @@ WoW DataHub is a full-stack web application that manages player and character da
 - **Interconnected database tables** with full referential integrity
 - **Business rule enforcement** through SQL triggers and Java validation
 - **Dynamic ETL processes** for data population from WoW API
-- **Real-time analytics** with 9 database views
+- **Real-time analytics** with 9 database views (7 shown on dashboard)
 - **Responsive web interface** with Bootstrap 5
 
 ## ✨ Features
 
 ### Core Functionality
-- **Player Management**: Create and manage player accounts with activity tracking
 - **Character System**: 
-  - Create unique characters with race/clan combinations
-  - Manage character jobs, levels, and experience
-  - Track character wealth across multiple currencies
+  - Search characters by Player's last name
+  - Sort the result by chosen fields and order
+  - View character's detailed report
+  - Switch the equipped weapon with things only in the inventory and follow the business rules
 - **Inventory Management**: 
   - Full inventory system with stack size validation
   - Equipment slots with type-specific constraints
@@ -48,17 +48,17 @@ WoW DataHub is a full-stack web application that manages player and character da
 - **ETL Integration**: 
   - Default data loader for static game content
   - Dynamic data generator for players and characters
-  - Optional Blizzard API integration
+  - Blizzard API integration
 - **Analytics Dashboard**: Real-time statistics and visualizations
 - **Character Reports**: Detailed views of character inventory and status
 
 ## 🛠️ Technology Stack
 
 ### Backend
-- **Java 17** - Core application logic
+- **Java** - Core application logic
 - **Jakarta Servlets** - Web request handling
 - **JDBC** - Database connectivity
-- **MySQL 8.0** - Database management system
+- **MySQL** - Database management system
 
 ### Frontend
 - **JSP (JavaServer Pages)** - Dynamic web pages
@@ -69,7 +69,6 @@ WoW DataHub is a full-stack web application that manages player and character da
 ### Build & Deployment
 - **Eclipse IDE** - Development environment
 - **Apache Tomcat 11** - Application server
-- **Maven** - Dependency management
 
 ## 🗄️ Database Schema
 
@@ -132,7 +131,6 @@ WoW-DataHub/
 │   ├── ETL.jsp
 │   └── WEB-INF/
 │       └── web.xml
-└── pom.xml
 ```
 
 ## 🚀 Setup Instructions
@@ -146,14 +144,14 @@ WoW-DataHub/
 ### Database Setup
 1. Install MySQL and create a user:
 ```sql
-CREATE USER 'root'@'localhost' IDENTIFIED BY 'Neu2025!';
+CREATE USER 'root'@'localhost' IDENTIFIED BY 'password';
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost';
 ```
 
 2. Update database credentials in `ConnectionManager.java` if needed:
 ```java
 private static final String USER = "root";
-private static final String PASSWORD = "Neu2025!";
+private static final String PASSWORD = "password";
 private static final String HOSTNAME = "localhost";
 private static final int PORT = 3306;
 ```
@@ -199,7 +197,7 @@ cd WoW-DataHub
 ### Optional: WoW API Integration
 To enable real Blizzard API data:
 1. Get credentials from [Blizzard Developer Portal](https://develop.battle.net/)
-2. Update `WoWApiConfig.java`:
+2. Update `/src/main/java/game/config/WoWApiConfig.java`:
 ```java
 public static final String CLIENT_ID = "your_client_id";
 public static final String CLIENT_SECRET = "your_client_secret";
@@ -227,6 +225,8 @@ The system enforces several critical business rules:
 - Job levels range from 1-100
 - XP requires an associated job level
 - Characters must have at least one unlocked job
+
+[Business Rules]()
 
 ## 🔄 ETL Process
 
