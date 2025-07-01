@@ -18,7 +18,9 @@ A comprehensive database management system for World of Warcraft-inspired game d
 
 ## 🎯 Project Overview
 
-WoW DataHub is a full-stack web application that manages player and character data for a multiplayer online role-playing game (MMORPG). The system supports complex relationships between players, characters, items, currencies, and game statistics while enforcing strict business rules through database constraints and triggers.
+WoW DataHub is a full-stack web application that manages player and character data for a multiplayer online role-playing game (MMORPG). The system supports complex relationships between players, characters, items, currencies, and game statistics while enforcing strict business rules through database constraints and triggers.  
+
+[ERD](https://github.com/YannaCS/WoW-DataHub/blob/59a0cbf2229d5665fee90b096e116d56a8107f67/img/ERD.jpg)
 
 ### Key Highlights
 - **Interconnected database tables** with full referential integrity
