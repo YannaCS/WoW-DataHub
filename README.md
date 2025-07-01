@@ -5,7 +5,7 @@ A comprehensive database management system for World of Warcraft-inspired game d
 
 ## 📋 Table of Contents
 - [Project Overview](https://github.com/YannaCS/WoW-DataHub/blob/main/README.md#-project-overview)
-- [Features](#features)
+- [Features](https://github.com/YannaCS/WoW-DataHub/blob/main/README.md#-features)
 - [Technology Stack](#technology-stack)
 - [Database Schema](#database-schema)
 - [Project Structure](#project-structure)
