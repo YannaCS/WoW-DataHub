@@ -1,249 +1,395 @@
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find Characters - WoW DataHub</title>
+    <title>WoW DataHub - Find Characters</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+        
+        :root {
+            --wow-gold: #f4d03f;
+            --wow-blue: #1e3c72;
+            --wow-dark-blue: #0f1d36;
+            --wow-silver: #c0c0c0;
+            --wow-bg: #0a0e1a;
+            --wow-card-bg: rgba(20, 30, 48, 0.95);
+            --wow-border: #2c4875;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--wow-bg) 0%, var(--wow-dark-blue) 50%, var(--wow-blue) 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            font-family: 'Roboto', sans-serif;
+            color: #ffffff;
+        }
+        
+        .navbar {
+            background: var(--wow-card-bg) !important;
+            border-bottom: 2px solid var(--wow-border);
+            backdrop-filter: blur(10px);
+        }
+        
+        .navbar-brand {
+            font-family: 'Cinzel', serif;
+            color: var(--wow-gold) !important;
+            font-weight: 700;
+        }
+        
+        .search-container {
+            background: var(--wow-card-bg);
+            border: 2px solid var(--wow-border);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        
+        .form-label {
+            color: var(--wow-gold);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            background: rgba(30, 60, 114, 0.3);
+            border: 1px solid var(--wow-border);
+            color: #ffffff;
+            padding: 0.75rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background: rgba(30, 60, 114, 0.5);
+            border-color: var(--wow-gold);
+            color: #ffffff;
+            box-shadow: 0 0 0 0.2rem rgba(244, 208, 63, 0.25);
+        }
+        
+        .form-control::placeholder {
+            color: var(--wow-silver);
+        }
+        
+        .btn-search {
+            background: linear-gradient(135deg, var(--wow-gold) 0%, #e6b800 100%);
+            color: var(--wow-dark-blue);
+            border: none;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 208, 63, 0.3);
+        }
+        
+        .btn-show-all {
+            background: linear-gradient(135deg, var(--wow-blue) 0%, var(--wow-dark-blue) 100%);
+            color: var(--wow-gold);
+            border: 1px solid var(--wow-border);
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-show-all:hover {
+            background: linear-gradient(135deg, #2e5090 0%, #1a2f5a 100%);
+            border-color: var(--wow-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(30, 60, 114, 0.3);
+        }
+        
+        .results-container {
+            background: var(--wow-card-bg);
+            border: 2px solid var(--wow-border);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem auto;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--wow-border);
+        }
+        
+        .results-title {
+            font-family: 'Cinzel', serif;
+            color: var(--wow-gold);
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        
+        .table {
+            color: #ffffff;
+        }
+        
+        .table thead th {
+            background: rgba(30, 60, 114, 0.5);
+            color: var(--wow-gold);
+            border-color: var(--wow-border);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(44, 72, 117, 0.3);
+            transform: translateX(5px);
+        }
+        
+        .table tbody td {
+            border-color: rgba(244, 208, 63, 0.1);
+            vertical-align: middle;
+        }
+        
+        .sort-link {
+            color: var(--wow-gold);
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .sort-link:hover {
+            color: #ffffff;
+        }
+        
+        .sort-icon {
+            font-size: 0.8rem;
+            margin-left: 0.25rem;
+        }
+        
+        .btn-action {
+            background: linear-gradient(135deg, var(--wow-blue) 0%, var(--wow-dark-blue) 100%);
+            color: var(--wow-gold);
+            border: 1px solid var(--wow-border);
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-action:hover {
+            background: linear-gradient(135deg, var(--wow-gold) 0%, #e6b800 100%);
+            color: var(--wow-dark-blue);
+            border-color: var(--wow-gold);
+            transform: translateY(-2px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--wow-silver);
+        }
+        
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--wow-gold);
+            margin-bottom: 1rem;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: 1px solid var(--wow-border);
+            background: var(--wow-card-bg);
+            color: #ffffff;
+        }
+        
+        .alert-info {
+            border-color: var(--wow-gold);
+            background: rgba(244, 208, 63, 0.1);
+        }
+    </style>
 </head>
 <body>
-    <!-- Include WoW Navigation -->
-    <jsp:include page="WoWStyle.jsp">
-        <jsp:param name="activePage" value="findcharacter" />
-    </jsp:include>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="home">
+                <i class="bi bi-shield-shaded"></i> WoW DataHub
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="home">Dashboard</a>
+                <a class="nav-link active" href="findcharacter">Find Characters</a>
+                <a class="nav-link" href="etl">ETL Management</a>
+            </div>
+        </div>
+    </nav>
 
-    <div class="main-container">
-        <div class="main-content">
-            <h1 class="page-title">
-                <i class="bi bi-search"></i> Find Characters
-            </h1>
-            <p class="page-subtitle">
-                Search for players and their characters in the realm
-            </p>
+    <div class="container">
+        <!-- Search Form -->
+        <div class="search-container">
+            <h2 class="text-center mb-4" style="font-family: 'Cinzel', serif; color: var(--wow-gold);">
+                <i class="bi bi-search"></i> Find Characters by Player
+            </h2>
+            
+            <form action="findcharacter" method="post">
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label for="playerlastname" class="form-label">Player's Last Name</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="playerlastname" 
+                               name="playerlastname" 
+                               placeholder="Enter player's last name (partial match supported)"
+                               value="${param.playerlastname}">
+                        <small class="text-muted">Search supports partial matches (e.g., "Storm" will find "Stormwind")</small>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="sortBy" class="form-label">Sort By</label>
+                        <select class="form-select" id="sortBy" name="sortBy">
+                            <option value="playerLastName" ${param.sortBy == 'playerLastName' || empty param.sortBy ? 'selected' : ''}>Player Last Name</option>
+                            <option value="playerFirstName" ${param.sortBy == 'playerFirstName' ? 'selected' : ''}>Player First Name</option>
+                            <option value="characterLastName" ${param.sortBy == 'characterLastName' ? 'selected' : ''}>Character Last Name</option>
+                            <option value="characterFirstName" ${param.sortBy == 'characterFirstName' ? 'selected' : ''}>Character First Name</option>
+                            <option value="clan" ${param.sortBy == 'clan' ? 'selected' : ''}>Clan</option>
+                            <option value="job" ${param.sortBy == 'job' ? 'selected' : ''}>Job</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="sortOrder" class="form-label">Sort Order</label>
+                        <select class="form-select" id="sortOrder" name="sortOrder">
+                            <option value="ascending" ${param.sortOrder == 'ascending' || empty param.sortOrder ? 'selected' : ''}>Ascending</option>
+                            <option value="descending" ${param.sortOrder == 'descending' ? 'selected' : ''}>Descending</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-12 text-center mt-4">
+                        <button type="submit" class="btn btn-search">
+                            <i class="bi bi-search"></i> Search Characters
+                        </button>
+                        <a href="findcharacter" class="btn btn-show-all ms-2">
+                            <i class="bi bi-list-ul"></i> Show All Characters (only for test)
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
 
-            <!-- Messages -->
-            <c:if test="${not empty messages}">
+        <!-- Messages -->
+        <c:if test="${not empty messages}">
+            <div class="mt-3">
                 <c:forEach items="${messages}" var="message">
-                    <div class="alert alert-${message.key == 'error' ? 'danger' : (message.key == 'warning' ? 'warning' : 'success')} alert-dismissible fade show">
-                        <strong>
-                            <c:choose>
-                                <c:when test="${message.key == 'error'}"><i class="bi bi-exclamation-triangle"></i> Error!</c:when>
-                                <c:when test="${message.key == 'warning'}"><i class="bi bi-exclamation-circle"></i> Warning!</c:when>
-                                <c:otherwise><i class="bi bi-check-circle"></i> Success!</c:otherwise>
-                            </c:choose>
-                        </strong>
-                        ${message.value}
+                    <div class="alert alert-info alert-dismissible fade show">
+                        <i class="bi bi-info-circle"></i> ${message.value}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 </c:forEach>
-            </c:if>
+            </div>
+        </c:if>
 
-            <!-- Search Form -->
-            <div class="row justify-content-center">
-                <div class="col-lg-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0"><i class="bi bi-person-search"></i> Player Search</h5>
-                        </div>
-                        <div class="card-body">
-                            <form method="post" action="findcharacter">
-                                <div class="mb-3">
-                                    <label for="firstname" class="form-label">
-                                        <i class="bi bi-person"></i> Player First Name
-                                    </label>
-                                    <input type="text" 
-                                           class="form-control" 
-                                           id="firstname" 
-                                           name="firstname" 
-                                           value="${previousFirstName}" 
-                                           placeholder="Enter player's first name..."
-                                           required>
-                                </div>
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi bi-search"></i> Search Players
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+        <!-- Results Table -->
+        <c:if test="${not empty characters}">
+            <div class="results-container">
+                <div class="results-header">
+                    <h3 class="results-title">
+                        <i class="bi bi-person-lines-fill"></i> Characters Found: ${characters.size()}
+                    </h3>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover">
+                        <thead>
+                            <tr>
+                                <th>Character Name</th>
+                                <th>Player Name</th>
+                                <th>Clan</th>
+                                <th>Race</th>
+                                <th>Current Job</th>
+                                <th>Weapon</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach items="${characters}" var="character">
+                                <tr>
+                                    <td>
+                                        <strong>${character.firstName} ${character.lastName}</strong>
+                                        <br>
+                                        <small class="text-muted">ID: ${character.charID}</small>
+                                    </td>
+                                    <td>
+                                        ${character.players.firstName} ${character.players.lastName}
+                                        <br>
+                                        <small class="text-muted">${character.players.emailAddress}</small>
+                                    </td>
+                                    <td>${character.clan.clanName}</td>
+                                    <td>
+                                        <c:choose>
+                                            <c:when test="${character.clan.race == 'HUMAN'}">
+                                                <span style="color: #FFD700;">Human</span>
+                                            </c:when>
+                                            <c:when test="${character.clan.race == 'ELF'}">
+                                                <span style="color: #87CEEB;">Elf</span>
+                                            </c:when>
+                                            <c:when test="${character.clan.race == 'DWARF'}">
+                                                <span style="color: #CD853F;">Dwarf</span>
+                                            </c:when>
+                                            <c:when test="${character.clan.race == 'ORC'}">
+                                                <span style="color: #DC143C;">Orc</span>
+                                            </c:when>
+                                            <c:when test="${character.clan.race == 'GOBLIN'}">
+                                                <span style="color: #32CD32;">Goblin</span>
+                                            </c:when>
+                                            <c:otherwise>${character.clan.race}</c:otherwise>
+                                        </c:choose>
+                                    </td>
+                                    <td>${character.weaponWeared.wearableJob}</td>
+                                    <td>
+                                        ${character.weaponWeared.itemName}
+                                        <br>
+                                        <small class="text-muted">Damage: ${character.weaponWeared.damage}</small>
+                                    </td>
+                                    <td>
+                                        <a href="characterdetailreport?charid=${character.charID}" class="btn btn-action btn-sm">
+                                            <i class="bi bi-eye"></i> View Details
+                                        </a>
+                                        <a href="weaponupdate?charid=${character.charID}" class="btn btn-action btn-sm mt-1">
+                                            <i class="bi bi-sword"></i> Change Weapon
+                                        </a>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
                 </div>
             </div>
-
-            <!-- Search Results -->
-            <c:if test="${not empty players}">
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="mb-0">
-                                    <i class="bi bi-people"></i> Search Results 
-                                    <span class="badge" style="background: var(--wow-gold); color: var(--wow-dark-blue);">
-                                        ${players.size()} found
-                                    </span>
-                                </h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-hover">
-                                        <thead>
-                                            <tr>
-                                                <th><i class="bi bi-hash"></i> Player ID</th>
-                                                <th><i class="bi bi-person"></i> First Name</th>
-                                                <th><i class="bi bi-person-badge"></i> Last Name</th>
-                                                <th><i class="bi bi-envelope"></i> Email</th>
-                                                <th><i class="bi bi-gear"></i> Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <c:forEach items="${players}" var="player">
-                                                <tr>
-                                                    <td>
-                                                        <span class="badge" style="background: var(--wow-blue); color: var(--wow-gold);">
-                                                            ${player.playerID}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <strong style="color: var(--wow-gold);">${player.firstName}</strong>
-                                                    </td>
-                                                    <td>${player.lastName}</td>
-                                                    <td>
-                                                        <small class="text-muted">
-                                                            <i class="bi bi-envelope-at"></i> ${player.emailAddress}
-                                                        </small>
-                                                    </td>
-                                                    <td>
-                                                        <div class="btn-group" role="group">
-                                                            <a href="characterdetailreport?charid=${player.playerID}" 
-                                                               class="btn btn-outline-primary btn-sm"
-                                                               title="View Characters">
-                                                                <i class="bi bi-eye"></i> View
-                                                            </a>
-                                                            <a href="weaponupdate?playerid=${player.playerID}" 
-                                                               class="btn btn-outline-primary btn-sm"
-                                                               title="Manage Equipment">
-                                                                <i class="bi bi-sword"></i> Equipment
-                                                            </a>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </c:forEach>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        </c:if>
+        
+        <!-- Empty State -->
+        <c:if test="${empty characters}">
+            <div class="results-container">
+                <div class="empty-state">
+                    <i class="bi bi-person-x"></i>
+                    <h4>No Characters Found</h4>
+                    <p>Try searching with a different player last name or show all characters.</p>
                 </div>
-            </c:if>
-
-            <!-- Player Statistics (if results found) -->
-            <c:if test="${not empty players && players.size() > 0}">
-                <div class="row mt-4">
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="bi bi-graph-up"></i> Search Statistics</h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="row text-center">
-                                    <div class="col-6">
-                                        <div style="background: rgba(244, 208, 63, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid var(--wow-gold);">
-                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--wow-gold);">
-                                                ${players.size()}
-                                            </div>
-                                            <small class="text-muted">Players Found</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-6">
-                                        <div style="background: rgba(30, 60, 114, 0.1); padding: 1rem; border-radius: 8px; border: 1px solid var(--wow-blue);">
-                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--wow-silver);">
-                                                <c:set var="totalChars" value="0" />
-                                                <c:forEach items="${players}" var="player">
-                                                    <c:set var="totalChars" value="${totalChars + 1}" />
-                                                </c:forEach>
-                                                Est. ${totalChars * 2}
-                                            </div>
-                                            <small class="text-muted">Est. Characters</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Search Tips</h6>
-                            </div>
-                            <div class="card-body">
-                                <ul class="small text-muted mb-0">
-                                    <li>Search is case-sensitive and looks for exact matches</li>
-                                    <li>Use the View button to see detailed character information</li>
-                                    <li>Equipment button allows weapon and gear management</li>
-                                    <li>Players may have multiple characters in different clans</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </c:if>
-
-            <!-- Empty State -->
-            <c:if test="${empty players && not empty previousFirstName}">
-                <div class="row mt-4 justify-content-center">
-                    <div class="col-lg-6">
-                        <div class="text-center" style="padding: 3rem; background: rgba(44, 72, 117, 0.2); border-radius: 15px; border: 2px dashed var(--wow-border);">
-                            <i class="bi bi-search" style="font-size: 3rem; color: var(--wow-silver); opacity: 0.5;"></i>
-                            <h4 class="mt-3" style="color: var(--wow-silver);">No Players Found</h4>
-                            <p class="text-muted">
-                                No players found with the first name "<strong>${previousFirstName}</strong>".
-                                <br>Try a different name or run the ETL process to add more data.
-                            </p>
-                            <div class="mt-3">
-                                <a href="etl" class="btn btn-primary me-2">
-                                    <i class="bi bi-database-add"></i> Run ETL
-                                </a>
-                                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('firstname').focus();">
-                                    <i class="bi bi-arrow-repeat"></i> Try Again
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </c:if>
-
-            <!-- Quick Actions -->
-            <div class="text-center mt-4">
-                <a href="home" class="btn btn-outline-primary me-3">
-                    <i class="bi bi-house-door"></i> Back to Dashboard
-                </a>
-                <a href="etl" class="btn btn-outline-primary">
-                    <i class="bi bi-database-add"></i> ETL Management
-                </a>
             </div>
-        </div>
+        </c:if>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Auto-focus on search input when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('firstname');
-            if (searchInput && !searchInput.value) {
-                searchInput.focus();
-            }
-        });
-        
-        // Add loading state to search button
-        document.querySelector('form').addEventListener('submit', function() {
-            const submitBtn = this.querySelector('button[type="submit"]');
-            submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Searching...';
-            submitBtn.disabled = true;
-        });
-    </script>
 </body>
 </html>
